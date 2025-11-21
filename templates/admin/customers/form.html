@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Editar' if form.id.data else 'Adicionar' }} Cliente - Estacione+{% endblock %}
+
+{% block content %}
+<style>
+    .modern-header {
+        background: #f7fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    
+    .modern-header h2,
+    .modern-header p {
+        color: #2d3748 !important;
+    }
+    
+    .modern-card {
+        border: none;
+        border-radius: 12px;
+        background: #ffffff;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+    
+    .modern-card:hover {
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+    
+    .section-header {
+        background: #f7fafc;
+        border-left: 3px solid #4a5568;
+        padding: 1rem 1.5rem;
+        border-radius: 8px 8px 0 0;
+        margin: 0;
+    }
+    
+    .section-header h6 {
+        margin: 0;
+        color: #2d3748;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .modern-input {
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+        padding: 0.65rem 1rem !important;
+        transition: all 0.2s ease !important;
+        background: #ffffff !important;
+        color: #2d3748 !important;
+    }
+    
+    .modern-input:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+        outline: none !important;
+    }
+    
+    .modern-label {
+        color: #4a5568 !important;
+        font-weight: 500 !important;
+        font-size: 0.875rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .modern-btn-primary {
+        background: #4a5568;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .modern-btn-primary:hover {
+        background: #2d3748;
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .modern-btn-secondary {
+        background: #f7fafc;
+        border: 1.5px solid #e2e8f0;
+        color: #4a5568;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .modern-btn-secondary:hover {
+        background: #edf2f7;
+        border-color: #cbd5e0;
+        color: #2d3748;
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+    <!-- Cabeçalho Moderno -->
+    <div class="modern-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-white fw-bold mb-2">
+                    <i class="bi bi-{{ 'pencil-square' if form.id.data else 'person-plus-fill' }} me-2"></i>
+                    {{ 'Editar' if form.id.data else 'Novo' }} Cliente
+                </h2>
+                <p class="text-white-50 mb-0">Gerencie as informações do cliente</p>
+            </div>
+            <a href="{{ url_for('list_customers') }}" class="modern-btn-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+        {{ form.hidden_tag() }}
+        
+        <div class="row g-4">
+            <!-- Coluna Esquerda: Dados do Cliente -->
+            <div class="col-lg-7">
+                <!-- Card: Informações Pessoais -->
+                <div class="modern-card">
+                    <div class="section-header">
+                        <h6>
+                            <i class="bi bi-person-badge me-2"></i>
+                            Informações Pessoais
+                        </h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="modern-label">Nome Completo *</label>
+                                {{ form.name(class="form-control modern-input", placeholder="Digite o nome completo") }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="modern-label">CPF *</label>
+                                <div class="input-group">
+                                    {{ form.cpf(class="form-control modern-input cpf", placeholder="000.000.000-00", oninput="formatCPF(this)") }}
+                                    <button class="btn btn-outline-secondary modern-input" type="button" id="searchCpfBtn" title="Buscar CPF" style="border-left: none;">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="modern-label">RG</label>
+                                {{ form.rg(class="form-control modern-input", placeholder="00.000.000-0") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="modern-label">Data de Nascimento</label>
+                                {{ form.birth_date(class="form-control modern-input date", type="date") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Contato -->
+                <div class="modern-card">
+                    <div class="section-header">
+                        <h6>
+                            <i class="bi bi-telephone me-2"></i>
+                            Contato
+                        </h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="modern-label">E-mail</label>
+                                <div class="input-group">
+                                    <span class="input-group-text modern-input" style="border-right: none;"><i class="bi bi-envelope"></i></span>
+                                    {{ form.email(class="form-control modern-input", placeholder="exemplo@email.com", style="border-left: none;") }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="modern-label">Telefone Principal *</label>
+                                {{ form.phone(class="form-control modern-input phone", placeholder="(00) 00000-0000", oninput="formatPhone(this)") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="modern-label">Telefone Secundário</label>
+                                {{ form.phone2(class="form-control modern-input phone", placeholder="(00) 00000-0000", oninput="formatPhone(this)") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Endereço -->
+                <div class="modern-card">
+                    <div class="section-header">
+                        <h6>
+                            <i class="bi bi-geo-alt me-2"></i>
+                            Endereço
+                        </h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="modern-label">CEP</label>
+                                <div class="input-group">
+                                    {{ form.cep(class="form-control modern-input cep", placeholder="00000-000", onblur="searchCep(this.value)", maxlength="9") }}
+                                    <button class="btn btn-outline-secondary modern-input" type="button" id="searchCepBtn" title="Buscar CEP" style="border-left: none;">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="modern-label">Logradouro</label>
+                                {{ form.street(class="form-control modern-input", placeholder="Rua, Avenida...") }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="modern-label">Número</label>
+                                {{ form.number(class="form-control modern-input", placeholder="Nº") }}
+                            </div>
+                            <div class="col-md-5">
+                                <label class="modern-label">Bairro</label>
+                                {{ form.neighborhood(class="form-control modern-input", placeholder="Bairro") }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="modern-label">Complemento</label>
+                                {{ form.complement(class="form-control modern-input", placeholder="Apto, Bloco...") }}
+                            </div>
+                            <div class="col-md-8">
+                                <label class="modern-label">Cidade</label>
+                                {{ form.city(class="form-control modern-input", placeholder="Cidade") }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="modern-label">Estado</label>
+                                {{ form.state(class="form-select modern-input") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Direita: Observações e Status -->
+            <div class="col-lg-5">
+                <!-- Card: Observações e Status -->
+                <div class="modern-card">
+                    <div class="section-header">
+                        <h6>
+                            <i class="bi bi-chat-square-text me-2"></i>
+                            Observações & Status
+                        </h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="modern-label">Anotações Gerais</label>
+                                {{ form.notes(class="form-control modern-input", rows="8", placeholder="Digite observações importantes sobre o cliente...") }}
+                            </div>
+                            <div class="col-12">
+                                <label class="modern-label">Status do Cliente</label>
+                                {{ form.status(class="form-select modern-input") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="row mt-4 mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-end gap-3">
+                    <a href="{{ url_for('list_customers') }}" class="modern-btn-secondary">
+                        <i class="bi bi-x-circle me-2"></i>Cancelar
+                    </a>
+                    <button type="submit" class="modern-btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>{{ 'Atualizar Cliente' if form.id.data else 'Cadastrar Cliente' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+// Formata CPF
+function formatCPF(input) {
+    let value = input.value.replace(/\D/g, '');
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    input.value = value;
+}
+
+// Formata Telefone
+function formatPhone(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length <= 10) {
+        value = value.replace(/(\d{2})(\d)/, '($1) $2');
+        value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    } else {
+        value = value.replace(/(\d{2})(\d)/, '($1) $2');
+        value = value.replace(/(\d{5})(\d)/, '$1-$2');
+    }
+    input.value = value;
+}
+
+// Buscar CEP
+function searchCep(cep) {
+    cep = cep.replace(/\D/g, '');
+    if (cep.length === 8) {
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.erro) {
+                    document.querySelector('[name="street"]').value = data.logradouro;
+                    document.querySelector('[name="neighborhood"]').value = data.bairro;
+                    document.querySelector('[name="city"]').value = data.localidade;
+                    document.querySelector('[name="state"]').value = data.uf;
+                }
+            });
+    }
+}
+
+// Aplica máscaras aos campos existentes
+document.querySelectorAll('.plate-mask').forEach(input => {
+    input.addEventListener('input', function() {
+        formatPlate(this);
+    });
+});
+</script>
+{% endblock %}

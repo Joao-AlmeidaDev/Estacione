@@ -1,0 +1,5 @@
+id,name,description,price,duration_days,is_active,created_at,updated_at
+1,Plano 1,,160.0,30,True,2025-11-20 13:40:37,2025-11-20 13:59:54
+2,Plano 2,,180.0,30,True,2025-11-20 13:59:39,
+3,Plano 3,,260.0,30,True,2025-11-20 14:00:25,
+4,Plano 4,nan,280.0,30,True,2025-11-20 14:00:38,

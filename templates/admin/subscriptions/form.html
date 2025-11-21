@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Nova Assinatura - Estacione+{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-check"></i> Nova Assinatura
+                        </h5>
+                        <a href="{{ url_for('list_subscriptions') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Cliente *</label>
+                                {{ form.customer_id(class="form-select", id="customer_select") }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Veículo *</label>
+                                {{ form.vehicle_id(class="form-select", id="vehicle_select") }}
+                                <small class="text-muted">Selecione o cliente primeiro</small>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Plano *</label>
+                                {{ form.plan_id(class="form-select", id="plan_select") }}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Data de Início *</label>
+                                {{ form.start_date(class="form-control", type="date") }}
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong>Informação:</strong> A data de vencimento será calculada automaticamente com base no plano selecionado.
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 mt-4">
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('list_subscriptions') }}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-lg"></i> Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-lg"></i> Criar Assinatura
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function(){
+    // Carrega veículos quando seleciona cliente
+    $('#customer_select').change(function(){
+        const customerId = $(this).val();
+        const vehicleSelect = $('#vehicle_select');
+        
+        if(customerId) {
+            $.ajax({
+                url: `/api/vehicles/by_customer/${customerId}`,
+                success: function(vehicles) {
+                    vehicleSelect.html('<option value="">Selecione um veículo</option>');
+                    vehicles.forEach(function(vehicle) {
+                        vehicleSelect.append(`<option value="${vehicle.id}">${vehicle.plate} - ${vehicle.model}</option>`);
+                    });
+                    vehicleSelect.prop('disabled', false);
+                }
+            });
+        } else {
+            vehicleSelect.html('<option value="">Selecione o cliente primeiro</option>');
+            vehicleSelect.prop('disabled', true);
+        }
+    });
+    
+    // Desabilita select de veículos inicialmente
+    if(!$('#customer_select').val()) {
+        $('#vehicle_select').prop('disabled', true);
+    }
+});
+</script>
+{% endblock %}

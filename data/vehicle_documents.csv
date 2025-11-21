@@ -1,0 +1,3 @@
+id,vehicle_id,type,name,filename,expiration_date,notes,created_at,user_id
+1,1,crlv,CRLV 2025,crlv_abc1234_2025.pdf,2025-12-31,Documento de licenciamento,2025-01-15 10:00:00,1
+2,1,seguro,Seguro Anual,seguro_2025_abc1234.pdf,2025-12-31,Apólice 123456789,2025-01-10 14:30:00,1

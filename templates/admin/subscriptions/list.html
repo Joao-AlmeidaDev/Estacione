@@ -1,0 +1,558 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Assinaturas - Estacione+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Gerenciar Assinaturas</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newSubscriptionModal">
+                <i class="bi bi-plus-lg"></i> Adicionar Assinatura
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Cliente ou Placa</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           value="{{ request.args.get('search', '') }}" placeholder="Nome do cliente ou placa">
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Todos</option>
+                        <option value="ativa" {{ 'selected' if request.args.get('status') == 'ativa' }}>Ativas</option>
+                        <option value="vencida" {{ 'selected' if request.args.get('status') == 'vencida' }}>Vencidas</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="plan" class="form-label">Plano</label>
+                    <select class="form-select" id="plan" name="plan">
+                        <option value="">Todos</option>
+                        {% for plan in plans %}
+                        <option value="{{ plan.id }}" {{ 'selected' if request.args.get('plan') == plan.id|string }}>
+                            {{ plan.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Filtrar</button>
+                    <a href="{{ url_for('list_subscriptions') }}" class="btn btn-outline-secondary">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela de Assinaturas -->
+    <div class="card">
+        <div class="card-body">
+            {% if subscriptions %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Veículo</th>
+                            <th>Plano</th>
+                            <th>Início</th>
+                            <th>Vencimento</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in subscriptions %}
+                        <tr>
+                            <td>
+                                <strong>{{ sub.customer_name }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-dark">{{ sub.vehicle_plate }}</span>
+                            </td>
+                            <td>{{ sub.plan_name }}</td>
+                            <td>
+                                <small class="text-muted">{{ sub.start_date if sub.start_date else '-' }}</small>
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ sub.end_date if sub.end_date else '-' }}</small>
+                            </td>
+                            <td>
+                                <strong class="text-success">R$ {{ "%.2f"|format(sub.amount|float) if sub.amount else '0,00' }}</strong>
+                            </td>
+                            <td>
+                                {% if sub.is_active %}
+                                <span class="badge bg-success">Ativa</span>
+                                {% else %}
+                                <span class="badge bg-danger">Vencida</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary btn-edit-subscription" 
+                                            title="Editar"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editSubscriptionModal"
+                                            data-id="{{ sub.id }}"
+                                            data-customer-id="{{ sub.customer_id }}"
+                                            data-vehicle-id="{{ sub.vehicle_id }}"
+                                            data-plan-id="{{ sub.plan_id }}"
+                                            data-start-date="{{ sub.start_date_raw }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-btn" 
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                            data-subscription-id="{{ sub.id }}"
+                                            data-customer-name="{{ sub.customer_name }}"
+                                            title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-clipboard-x display-1 text-muted"></i>
+                <h4 class="mt-3">Nenhuma assinatura encontrada</h4>
+                <p class="text-muted">Comece adicionando a primeira assinatura do sistema.</p>
+                <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#newSubscriptionModal">
+                    <i class="bi bi-plus-lg"></i> Adicionar Assinatura
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Tem certeza que deseja excluir a assinatura de <strong id="deleteCustomerName"></strong>?</p>
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <strong>Atenção:</strong> Esta ação não poderá ser desfeita.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <form id="deleteForm" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Confirmar Exclusão
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nova Assinatura -->
+<div class="modal fade" id="newSubscriptionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="bi bi-plus-circle text-primary me-2"></i>Nova Assinatura
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('add_subscription') }}" method="POST" id="newSubscriptionForm">
+                <input type="hidden" name="subscription_id" id="modal_subscription_id" value="">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Cliente *</label>
+                            <select class="form-control" name="customer_id" id="modal_customer_select" required>
+                                <option value="">Selecione um cliente</option>
+                                {% for customer in customers %}
+                                <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Veículo *</label>
+                            <select class="form-control" name="vehicle_id" id="modal_vehicle_select" required disabled>
+                                <option value="">Selecione o cliente primeiro</option>
+                            </select>
+                            <small class="text-muted d-block mt-1">
+                                <i class="bi bi-info-circle"></i> Primeiro selecione o cliente
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Plano *</label>
+                            <select class="form-control" name="plan_id" id="modal_plan_select" required>
+                                <option value="">Selecione um plano</option>
+                                {% for plan in plans %}
+                                <option value="{{ plan.id }}" data-price="{{ plan.price }}" data-name="{{ plan.name }}">
+                                    {{ plan.name }} - R$ {{ "%.2f"|format(plan.price) }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Data de Início *</label>
+                            <input type="date" class="form-control" name="start_date" id="modal_start_date" required>
+                        </div>
+                        
+                        <div class="col-12" id="modal_calculation_info" style="display: none;">
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-calculator"></i>
+                                <strong>Cálculo:</strong>
+                                <span id="modal_calc_text"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Criar Assinatura
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Assinatura -->
+<div class="modal fade" id="editSubscriptionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil text-warning me-2"></i>Editar Assinatura
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('add_subscription') }}" method="POST" id="editSubscriptionForm">
+                <input type="hidden" name="subscription_id" id="edit_subscription_id" value="">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Cliente *</label>
+                            <select class="form-control" name="customer_id" id="edit_customer_select" required>
+                                <option value="">Selecione um cliente</option>
+                                {% for customer in customers %}
+                                <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Veículo *</label>
+                            <select class="form-control" name="vehicle_id" id="edit_vehicle_select" required disabled>
+                                <option value="">Selecione o cliente primeiro</option>
+                            </select>
+                            <small class="text-muted d-block mt-1">
+                                <i class="bi bi-info-circle"></i> Primeiro selecione o cliente
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Plano *</label>
+                            <select class="form-control" name="plan_id" id="edit_plan_select" required>
+                                <option value="">Selecione um plano</option>
+                                {% for plan in plans %}
+                                <option value="{{ plan.id }}" data-price="{{ plan.price }}" data-name="{{ plan.name }}">
+                                    {{ plan.name }} - R$ {{ "%.2f"|format(plan.price) }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Data de Início *</label>
+                            <input type="date" class="form-control" name="start_date" id="edit_start_date" required>
+                        </div>
+                        
+                        <div class="col-12" id="edit_calculation_info" style="display: none;">
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-calculator"></i>
+                                <strong>Cálculo:</strong>
+                                <span id="edit_calc_text"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check-lg"></i> Atualizar Assinatura
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+<style>
+.card-header {
+    background-color: #f7fafc;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.card-header h5 {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+/* Estilo para Select2 no modal */
+.select2-container--bootstrap-5 .select2-selection {
+    min-height: 46px !important;
+    border: 1px solid #ced4da !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection--single {
+    height: 46px !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+    line-height: 44px !important;
+    padding-left: 12px !important;
+    color: #495057;
+    font-size: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+    height: 44px !important;
+}
+
+.select2-container--bootstrap-5 .select2-dropdown {
+    border-color: #dee2e6 !important;
+    z-index: 9999 !important;
+}
+
+.select2-container--bootstrap-5 .select2-search--dropdown {
+    padding: 8px !important;
+    background-color: #f8f9fa !important;
+}
+
+.select2-container--bootstrap-5 .select2-search__field {
+    border: 1px solid #ced4da !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    width: 100% !important;
+    font-size: 14px !important;
+}
+
+.select2-container--bootstrap-5 .select2-search__field:focus {
+    border-color: #0d6efd !important;
+    outline: 0 !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.select2-container--bootstrap-5 .select2-results__option {
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+}
+
+.select2-container--bootstrap-5 .select2-results__option--highlighted {
+    background-color: #0d6efd !important;
+    color: white !important;
+}
+
+/* Z-index para dropdown aparecer sobre o modal */
+.select2-container {
+    z-index: 9999 !important;
+}
+
+.select2-dropdown {
+    z-index: 9999 !important;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    console.log('Inicializando modais de assinaturas...');
+    
+    // ========== MODAL DE ADICIONAR ==========
+    $('#newSubscriptionModal').on('shown.bs.modal', function() {
+        initSelect2('#modal_customer_select', '#newSubscriptionModal');
+        initSelect2('#modal_vehicle_select', '#newSubscriptionModal');
+        initSelect2('#modal_plan_select', '#newSubscriptionModal');
+    });
+    
+    $(document).on('change', '#modal_customer_select', function() {
+        loadVehiclesForModal($(this).val(), '#modal_vehicle_select', '#newSubscriptionModal');
+    });
+    
+    $(document).on('change', '#modal_vehicle_select, #modal_plan_select', calculateModalTotal);
+    
+    // ========== MODAL DE EDITAR ==========
+    $('#editSubscriptionModal').on('show.bs.modal', function(e) {
+        const button = $(e.relatedTarget);
+        $('#edit_subscription_id').val(button.data('id'));
+        $('#edit_customer_select').val(button.data('customer-id'));
+        $('#edit_plan_select').val(button.data('plan-id'));
+        $('#edit_start_date').val(button.data('start-date'));
+        
+        loadVehiclesForEdit(button.data('customer-id'), button.data('vehicle-id'));
+    });
+    
+    $('#editSubscriptionModal').on('shown.bs.modal', function() {
+        initSelect2('#edit_customer_select', '#editSubscriptionModal');
+        initSelect2('#edit_plan_select', '#editSubscriptionModal');
+        calculateEditTotal();
+    });
+    
+    $(document).on('change', '#edit_customer_select', function() {
+        loadVehiclesForModal($(this).val(), '#edit_vehicle_select', '#editSubscriptionModal');
+    });
+    
+    $(document).on('change', '#edit_vehicle_select, #edit_plan_select', calculateEditTotal);
+});
+
+function initSelect2(selector, modalId) {
+    const elem = $(selector);
+    if (!elem.hasClass('select2-hidden-accessible')) {
+        elem.select2({
+            theme: 'bootstrap-5',
+            dropdownParent: $(modalId),
+            placeholder: 'Digite para buscar...',
+            allowClear: true,
+            width: '100%',
+            minimumResultsForSearch: 0
+        });
+    }
+}
+
+function loadVehiclesForModal(customerId, vehicleSelectId, modalId) {
+    const vehicleSelect = $(vehicleSelectId);
+    
+    if(customerId) {
+        $.ajax({
+            url: `/api/vehicles/by_customer/${customerId}`,
+            method: 'GET',
+            success: function(vehicles) {
+                if (vehicleSelect.hasClass('select2-hidden-accessible')) {
+                    vehicleSelect.select2('destroy');
+                }
+                
+                vehicleSelect.empty();
+                if (vehicles && vehicles.length > 0) {
+                    vehicleSelect.append(new Option('Selecione um veículo', '', false, false));
+                    vehicles.forEach(function(vehicle) {
+                        vehicleSelect.append(`<option value="${vehicle.id}">${vehicle.plate} - ${vehicle.model}</option>`);
+                    });
+                    vehicleSelect.prop('disabled', false);
+                    initSelect2(vehicleSelectId, modalId);
+                } else {
+                    vehicleSelect.append(new Option('Nenhum veículo encontrado', '', false, false));
+                    vehicleSelect.prop('disabled', true);
+                }
+            }
+        });
+    } else {
+        if (vehicleSelect.hasClass('select2-hidden-accessible')) {
+            vehicleSelect.select2('destroy');
+        }
+        vehicleSelect.empty().append(new Option('Selecione o cliente primeiro', '', false, false));
+        vehicleSelect.prop('disabled', true);
+    }
+}
+
+function loadVehiclesForEdit(customerId, vehicleId) {
+    $.ajax({
+        url: `/api/vehicles/by_customer/${customerId}`,
+        method: 'GET',
+        success: function(vehicles) {
+            const vehicleSelect = $('#edit_vehicle_select');
+            
+            if (vehicleSelect.hasClass('select2-hidden-accessible')) {
+                vehicleSelect.select2('destroy');
+            }
+            
+            vehicleSelect.empty();
+            if (vehicles && vehicles.length > 0) {
+                vehicleSelect.append(new Option('Selecione um veículo', '', false, false));
+                vehicles.forEach(function(vehicle) {
+                    vehicleSelect.append(`<option value="${vehicle.id}">${vehicle.plate} - ${vehicle.model}</option>`);
+                });
+                vehicleSelect.prop('disabled', false);
+                vehicleSelect.val(vehicleId);
+            }
+        }
+    });
+}
+
+function calculateModalTotal() {
+    const planSelect = $('#modal_plan_select');
+    const selectedOption = planSelect.find(':selected');
+    
+    if (selectedOption.val()) {
+        const planPrice = parseFloat(selectedOption.data('price'));
+        const planName = selectedOption.data('name');
+        $('#modal_calc_text').html(`Plano <strong>${planName}</strong>: R$ ${planPrice.toFixed(2)}`);
+        $('#modal_calculation_info').show();
+    } else {
+        $('#modal_calculation_info').hide();
+    }
+}
+
+function calculateEditTotal() {
+    const planSelect = $('#edit_plan_select');
+    const selectedOption = planSelect.find(':selected');
+    
+    if (selectedOption.val()) {
+        const planPrice = parseFloat(selectedOption.data('price'));
+        const planName = selectedOption.data('name');
+        $('#edit_calc_text').html(`Plano <strong>${planName}</strong>: R$ ${planPrice.toFixed(2)}`);
+        $('#edit_calculation_info').show();
+    } else {
+        $('#edit_calculation_info').hide();
+    }
+}
+
+// Controlar modal de exclusão
+$(document).on('click', '.delete-btn', function() {
+    const subscriptionId = $(this).data('subscription-id');
+    const customerName = $(this).data('customer-name');
+    
+    // Atualizar nome do cliente no modal
+    $('#deleteCustomerName').text(customerName);
+    
+    // Atualizar action do formulário de exclusão
+    $('#deleteForm').attr('action', `/subscriptions/delete/${subscriptionId}`);
+});
+</script>
+{% endblock %}

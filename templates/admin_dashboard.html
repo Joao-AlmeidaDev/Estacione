@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Painel do Administrador - Estacione+{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Painel do Administrador</h1>
+    <p>Bem-vindo, {{ current_user.username }}.</p>
+    
+    <div class="list-group">
+        <a href="{{ url_for('list_customers') }}" class="list-group-item list-group-item-action">Gerenciar Clientes</a>
+        <a href="#" class="list-group-item list-group-item-action">Gerenciar Veículos</a>
+        <a href="#" class="list-group-item list-group-item-action">Gerenciar Planos</a>
+        <a href="#" class="list-group-item list-group-item-action">Gerenciar Assinaturas</a>
+        <a href="#" class="list-group-item list-group-item-action list-group-item-primary">Ver Relatórios Financeiros</a>
+    </div>
+{% endblock %}

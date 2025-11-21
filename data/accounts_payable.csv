@@ -1,0 +1,10 @@
+id,supplier,description,amount,due_date,payment_date,status,category,payment_method,notes,created_at,updated_at
+1,INSS,INSS,197.0,2025-11-25,2025-11-20,pago,Outros,dinheiro,,2025-11-20 19:24:10,2025-11-20 20:01:49
+2,IMPOSTO SIMPLES NACIONAL,Imposto,988.2,2025-11-30,2025-11-20,pago,Impostos,dinheiro,,2025-11-20 22:22:05,2025-11-20 22:28:33
+3,CONTADOR,CONTADOR,470.0,2025-11-10,2025-11-20,pago,Outros,dinheiro,,2025-11-20 22:23:00,2025-11-20 22:28:28
+4,Aluguel,Aluguel,2.5,2025-11-10,,pendente,Aluguel,,,2025-11-20 22:23:39,
+5,Agua,Agua,167.8,2025-11-10,2025-11-20,pago,Água,dinheiro,,2025-11-20 22:25:03,2025-11-20 22:28:22
+6,Luz,Luz,154.7,2025-11-10,2025-11-20,pago,Energia,dinheiro,,2025-11-20 22:25:52,2025-11-20 22:28:17
+7,Internet,Internet,80.0,2025-11-10,2025-11-20,pago,Internet,dinheiro,,2025-11-20 22:26:24,2025-11-20 22:28:12
+8,IPTU,IPTU,136.0,2025-11-10,2025-11-20,pago,Impostos,dinheiro,,2025-11-20 22:27:04,2025-11-20 22:28:06
+9,Taxa Municipal,Taxa,120.0,2025-11-10,2025-11-20,pago,Impostos,dinheiro,,2025-11-20 22:27:38,2025-11-20 22:28:01

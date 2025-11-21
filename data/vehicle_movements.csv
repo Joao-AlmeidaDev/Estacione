@@ -1,0 +1,4 @@
+id,vehicle_id,type,date_time,notes,user_id,created_at
+1,1,entrada,2025-11-19 08:15:00,Entrada para manutenção programada,1,2025-11-19 08:15:30
+2,1,saida,2025-11-19 12:30:00,Saída após manutenção,1,2025-11-19 12:30:45
+3,1,entrada,2025-11-19 14:00:00,Retorno ao estacionamento,2,2025-11-19 14:00:20

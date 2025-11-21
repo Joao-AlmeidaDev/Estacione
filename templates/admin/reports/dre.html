@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block title %}DRE - Demonstrativo de Resultados - Estacione+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-graph-up-arrow"></i> DRE - Demonstrativo de Resultados</h2>
+            <p class="text-muted mb-0">Análise completa do exercício financeiro</p>
+        </div>
+        <div class="d-flex gap-2">
+            <select class="form-select" style="width: auto;" onchange="changeYear(this.value)">
+                {% for y in years %}
+                <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Cards Estatísticos -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #48bb78;">
+                    <i class="bi bi-arrow-down-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">R$ {{ "{:,.2f}".format(receita_bruta).replace(',', 'X').replace('.', ',').replace('X', '.') }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Receita Bruta</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fc8181;">
+                    <i class="bi bi-arrow-up-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">R$ {{ "{:,.2f}".format(despesas_totais).replace(',', 'X').replace('.', ',').replace('X', '.') }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Despesas Totais</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: {{ '#48bb78' if resultado_liquido >= 0 else '#fc8181' }};">
+                    <i class="bi bi-{{ 'check-circle' if resultado_liquido >= 0 else 'x-circle' }}"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: {{ '#48bb78' if resultado_liquido >= 0 else '#fc8181' }};">R$ {{ "{:,.2f}".format(resultado_liquido).replace(',', 'X').replace('.', ',').replace('X', '.') }}</div>
+                    <div class="stat-label" style="color: #4a5568;">{{ "Lucro Líquido" if resultado_liquido >= 0 else "Prejuízo" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DRE Detalhado -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Demonstrativo Detalhado - {{ year }}</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;"></th>
+                            <th style="color: #2d3748;">Descrição</th>
+                            <th class="text-end" style="width: 150px; color: #2d3748;">Valor</th>
+                            <th class="text-end" style="width: 100px; color: #2d3748;">%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- RECEITAS -->
+                        <tr style="background: #f7fafc;">
+                            <td colspan="4" style="color: #2d3748; font-weight: 600; padding: 12px;">
+                                <i class="bi bi-plus-circle text-success me-2"></i>RECEITAS OPERACIONAIS
+                            </td>
+                        </tr>
+                        {% for receita in receitas_detalhadas %}
+                        <tr>
+                            <td></td>
+                            <td style="color: #4a5568; padding-left: 30px;">{{ receita.name }}</td>
+                            <td class="text-end" style="color: #48bb78; font-weight: 500;">R$ {{ "{:,.2f}".format(receita.amount).replace(',', 'X').replace('.', ',').replace('X', '.') }}</td>
+                            <td class="text-end" style="color: #4a5568;">{{ "{:.1f}%".format((receita.amount / receita_bruta * 100) if receita_bruta > 0 else 0) }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr style="background: #e2e8f0; font-weight: 600;">
+                            <td></td>
+                            <td style="color: #2d3748;">RECEITA BRUTA</td>
+                            <td class="text-end" style="color: #48bb78;">R$ {{ "{:,.2f}".format(receita_bruta).replace(',', 'X').replace('.', ',').replace('X', '.') }}</td>
+                            <td class="text-end" style="color: #2d3748;">100%</td>
+                        </tr>
+                        
+                        <tr><td colspan="4" style="padding: 20px;"></td></tr>
+                        
+                        <!-- DESPESAS -->
+                        <tr style="background: #f7fafc;">
+                            <td colspan="4" style="color: #2d3748; font-weight: 600; padding: 12px;">
+                                <i class="bi bi-dash-circle text-danger me-2"></i>DESPESAS OPERACIONAIS
+                            </td>
+                        </tr>
+                        {% for despesa in despesas_detalhadas %}
+                        <tr>
+                            <td></td>
+                            <td style="color: #4a5568; padding-left: 30px;">{{ despesa.name }}</td>
+                            <td class="text-end" style="color: #fc8181; font-weight: 500;">R$ {{ "{:,.2f}".format(despesa.amount).replace(',', 'X').replace('.', ',').replace('X', '.') }}</td>
+                            <td class="text-end" style="color: #4a5568;">{{ "{:.1f}%".format((despesa.amount / receita_bruta * 100) if receita_bruta > 0 else 0) }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr style="background: #e2e8f0; font-weight: 600;">
+                            <td></td>
+                            <td style="color: #2d3748;">TOTAL DAS DESPESAS</td>
+                            <td class="text-end" style="color: #fc8181;">R$ {{ "{:,.2f}".format(despesas_totais).replace(',', 'X').replace('.', ',').replace('X', '.') }}</td>
+                            <td class="text-end" style="color: #2d3748;">{{ "{:.1f}%".format((despesas_totais / receita_bruta * 100) if receita_bruta > 0 else 0) }}</td>
+                        </tr>
+                        
+                        <tr><td colspan="4" style="border-top: 2px solid #2d3748; padding: 20px;"></td></tr>
+                        
+                        <!-- RESULTADO -->
+                        <tr style="background: {{ '#e6fffa' if resultado_liquido >= 0 else '#fff5f5' }};">
+                            <td></td>
+                            <td style="color: #2d3748; font-weight: 700; font-size: 1.1rem;">
+                                <i class="bi bi-{{ 'trophy' if resultado_liquido >= 0 else 'exclamation-triangle' }} me-2"></i>
+                                RESULTADO LÍQUIDO DO EXERCÍCIO
+                            </td>
+                            <td class="text-end" style="color: {{ '#48bb78' if resultado_liquido >= 0 else '#fc8181' }}; font-weight: 700; font-size: 1.1rem;">
+                                R$ {{ "{:,.2f}".format(resultado_liquido).replace(',', 'X').replace('.', ',').replace('X', '.') }}
+                            </td>
+                            <td class="text-end" style="color: #2d3748; font-weight: 700; font-size: 1.1rem;">
+                                {{ "{:.1f}%".format((resultado_liquido / receita_bruta * 100) if receita_bruta > 0 else 0) }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos de Análise -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Distribuição de Receitas</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="receitasChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart-fill"></i> Distribuição de Despesas</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="despesasChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evolução Mensal -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-graph-up"></i> Evolução Mensal - {{ year }}</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="evolutionChart" height="80"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Configuração de cores padrão
+Chart.defaults.color = '#4a5568';
+Chart.defaults.borderColor = '#e2e8f0';
+
+// Gráfico de Receitas
+const receitasCtx = document.getElementById('receitasChart').getContext('2d');
+new Chart(receitasCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ receitas_labels|tojson }},
+        datasets: [{
+            data: {{ receitas_data|tojson }},
+            backgroundColor: [
+                '#48bb78',
+                '#4299e1',
+                '#9f7aea',
+                '#38b2ac',
+                '#ed8936'
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    font: { size: 12 },
+                    color: '#4a5568'
+                }
+            },
+            tooltip: {
+                backgroundColor: '#2d3748',
+                padding: 12,
+                titleFont: { size: 13 },
+                bodyFont: { size: 12 },
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed || 0;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return `${label}: R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${percentage}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Gráfico de Despesas
+const despesasCtx = document.getElementById('despesasChart').getContext('2d');
+new Chart(despesasCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ despesas_labels|tojson }},
+        datasets: [{
+            data: {{ despesas_data|tojson }},
+            backgroundColor: [
+                '#fc8181',
+                '#f6ad55',
+                '#f687b3',
+                '#fc8181',
+                '#feb2b2',
+                '#fbb6ce'
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    font: { size: 12 },
+                    color: '#4a5568'
+                }
+            },
+            tooltip: {
+                backgroundColor: '#2d3748',
+                padding: 12,
+                titleFont: { size: 13 },
+                bodyFont: { size: 12 },
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed || 0;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return `${label}: R$ ${value.toLocaleString('pt-BR', {minimumFractionDigits: 2})} (${percentage}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Gráfico de Evolução
+const evolutionCtx = document.getElementById('evolutionChart').getContext('2d');
+new Chart(evolutionCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+        datasets: [
+            {
+                label: 'Receitas',
+                data: {{ monthly_receitas|tojson }},
+                backgroundColor: '#48bb78',
+                borderRadius: 4
+            },
+            {
+                label: 'Despesas',
+                data: {{ monthly_despesas|tojson }},
+                backgroundColor: '#fc8181',
+                borderRadius: 4
+            },
+            {
+                label: 'Resultado',
+                data: {{ monthly_resultado|tojson }},
+                backgroundColor: '#4299e1',
+                type: 'line',
+                borderColor: '#4299e1',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.3,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        interaction: {
+            mode: 'index',
+            intersect: false
+        },
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    padding: 15,
+                    font: { size: 12 },
+                    color: '#4a5568',
+                    usePointStyle: true
+                }
+            },
+            tooltip: {
+                backgroundColor: '#2d3748',
+                padding: 12,
+                titleFont: { size: 13 },
+                bodyFont: { size: 12 },
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        label += 'R$ ' + context.parsed.y.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                        return label;
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: '#e2e8f0',
+                    drawBorder: false
+                },
+                ticks: {
+                    color: '#4a5568',
+                    font: { size: 11 },
+                    callback: function(value) {
+                        return 'R$ ' + value.toLocaleString('pt-BR');
+                    }
+                }
+            },
+            x: {
+                grid: {
+                    display: false,
+                    drawBorder: false
+                },
+                ticks: {
+                    color: '#4a5568',
+                    font: { size: 11 }
+                }
+            }
+        }
+    }
+});
+
+function changeYear(year) {
+    window.location.href = `{{ url_for('dre_report') }}?year=${year}`;
+}
+</script>
+{% endblock %}

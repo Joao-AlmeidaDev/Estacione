@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Fluxo de Caixa - Estacione+{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-cash-stack"></i> Fluxo de Caixa</h2>
+            <p class="text-muted mb-0">Movimentação financeira detalhada</p>
+        </div>
+        <button class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nova Movimentação
+        </button>
+    </div>
+    
+    <!-- Cards Estatísticos - Realizados -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #4a5568;">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ saldo_atual|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Saldo Atual (Realizado)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #48bb78;">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ entradas_mes|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Entradas Realizadas</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fc8181;">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ saidas_mes|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Saídas Realizadas</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #4a5568;">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ movements|default([])|length }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Movimentações Total</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cards Estatísticos - Previstos e Vencidos -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #9f7aea;">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ entradas_previstas|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Entradas Previstas</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #ed8936;">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ saidas_previstas|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Saídas Previstas</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #e53e3e;">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ entradas_vencidas|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">A Receber Vencido</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #c53030;">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ saidas_vencidas|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">A Pagar Vencido</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráfico -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-graph-up"></i> Evolução do Saldo (Últimos 30 dias)</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="cashFlowChart" height="80"></canvas>
+        </div>
+    </div>
+    
+    <!-- Tabela de Movimentações -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-list-ul"></i> Últimas Movimentações</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Tipo</th>
+                            <th>Categoria</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mov in movements|default([]) %}
+                        <tr class="{{ 'table-danger' if mov.status == 'vencido' else ('table-warning' if mov.status == 'previsto' else '') }}">
+                            <td>{{ mov.date }}</td>
+                            <td>{{ mov.description }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if mov.type == 'entrada' else 'danger' }}">
+                                    <i class="bi bi-arrow-{{ 'down' if mov.type == 'entrada' else 'up' }}-circle"></i>
+                                    {{ mov.type|title }}
+                                </span>
+                            </td>
+                            <td><span class="badge bg-secondary">{{ mov.category }}</span></td>
+                            <td class="{{ 'text-success' if mov.type == 'entrada' else 'text-danger' }}">
+                                <strong>{{ "%.2f"|format(mov.amount)|replace('.', ',')|replace(',', '.', 1) }}</strong>
+                            </td>
+                            <td>
+                                {% if mov.status == 'realizado' %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle-fill"></i> Realizado
+                                    </span>
+                                {% elif mov.status == 'vencido' %}
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> Vencido
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-clock"></i> Previsto
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                <p class="mt-2">Nenhuma movimentação registrada</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('cashFlowChart');
+if (ctx) {
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ (chart_data.labels if chart_data else [])|tojson }},
+            datasets: [{
+                label: 'Saldo',
+                data: {{ (chart_data.balances if chart_data else [])|tojson }},
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + value.toLocaleString('pt-BR');
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}

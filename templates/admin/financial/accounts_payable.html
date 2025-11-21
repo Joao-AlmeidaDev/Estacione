@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+{% block title %}Contas a Pagar - Estacione+{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-arrow-up-circle"></i> Contas a Pagar</h2>
+            <p class="text-muted mb-0">Controle de despesas e fornecedores</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newPayableModal">
+            <i class="bi bi-plus-circle"></i> Nova Conta
+        </button>
+    </div>
+    
+    <!-- Cards Estatísticos -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fc8181;">
+                    <i class="bi bi-exclamation-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ total_pendente|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Total a Pagar</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #48bb78;">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ total_pago|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Pago no Mês</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #f56565;">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ total_vencido|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Vencidos</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #4a5568;">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ payables|default([])|length }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Total de Contas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="status">
+                        <option value="all">Todos</option>
+                        <option value="pendente" {{ 'selected' if status_filter == 'pendente' }}>Pendente</option>
+                        <option value="pago" {{ 'selected' if status_filter == 'pago' }}>Pago</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-select" name="category">
+                        <option value="">Todas</option>
+                        <option value="Aluguel">Aluguel</option>
+                        <option value="Energia">Energia</option>
+                        <option value="Água">Água</option>
+                        <option value="Folha de Pagamento">Folha de Pagamento</option>
+                        <option value="Fornecedores">Fornecedores</option>
+                        <option value="Manutenção">Manutenção</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                    <a href="{{ url_for('accounts_payable') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tabela -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-table"></i> Listagem de Contas</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fornecedor</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Valor</th>
+                            <th>Vencimento</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in payables|default([]) %}
+                        <tr class="{{ 'table-danger' if item.is_overdue else '' }}">
+                            <td>#{{ item.id }}</td>
+                            <td>{{ item.supplier|default('-') }}</td>
+                            <td>{{ item.description }}</td>
+                            <td><span class="badge bg-secondary">{{ item.category }}</span></td>
+                            <td><strong class="text-danger">R$ {{ "%.2f"|format(item.amount|float) }}</strong></td>
+                            <td>
+                                {{ item.due_date }}
+                                {% if item.is_overdue %}
+                                <span class="badge bg-danger ms-1">Vencida</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.status == 'pago' %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle"></i> Pago
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-clock"></i> Pendente
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.status != 'pago' %}
+                                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#payModal{{ item.id }}">
+                                    <i class="bi bi-cash"></i> Pagar
+                                </button>
+                                {% else %}
+                                <span class="text-muted">
+                                    <i class="bi bi-check-circle"></i> Pago
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        
+                        {% if not payables %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                <p class="mt-2">Nenhuma conta a pagar cadastrada</p>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modais de Pagamento -->
+{% for item in payables|default([]) %}
+<div class="modal fade" id="payModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-cash text-success me-2"></i>Confirmar Pagamento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Fornecedor: <strong>{{ item.supplier }}</strong></p>
+                <p class="mb-2">Descrição: <strong>{{ item.description }}</strong></p>
+                <p class="mb-3">Valor: <strong class="text-danger fs-5">R$ {{ "%.2f"|format(item.amount|float) }}</strong></p>
+                
+                <form id="payForm{{ item.id }}" action="{{ url_for('pay_account', payable_id=item.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Método de Pagamento</label>
+                        <select class="form-select" name="payment_method" required>
+                            <option value="dinheiro">Dinheiro</option>
+                            <option value="pix">PIX</option>
+                            <option value="cartao_credito">Cartão de Crédito</option>
+                            <option value="cartao_debito">Cartão de Débito</option>
+                            <option value="transferencia">Transferência Bancária</option>
+                            <option value="boleto">Boleto</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <button type="submit" form="payForm{{ item.id }}" class="btn btn-success">
+                    <i class="bi bi-check-lg"></i> Confirmar Pagamento
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modal Nova Conta -->
+<div class="modal fade" id="newPayableModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle text-primary me-2"></i>Nova Conta a Pagar
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('add_account_payable') }}" method="POST" id="newPayableForm">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Fornecedor *</label>
+                            <input type="text" class="form-control" name="supplier" required placeholder="Nome do fornecedor">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Categoria *</label>
+                            <select class="form-select" name="category" required>
+                                <option value="">Selecione...</option>
+                                <option value="Aluguel">Aluguel</option>
+                                <option value="Energia">Energia Elétrica</option>
+                                <option value="Água">Água</option>
+                                <option value="Internet">Internet</option>
+                                <option value="Telefone">Telefone</option>
+                                <option value="Folha de Pagamento">Folha de Pagamento</option>
+                                <option value="Fornecedores">Fornecedores</option>
+                                <option value="Manutenção">Manutenção</option>
+                                <option value="Limpeza">Limpeza</option>
+                                <option value="Impostos">Impostos</option>
+                                <option value="Seguros">Seguros</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Descrição *</label>
+                            <input type="text" class="form-control" name="description" required placeholder="Descrição da despesa">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Valor *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" name="amount" step="0.01" min="0.01" required placeholder="0,00">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Data de Vencimento *</label>
+                            <input type="date" class="form-control" name="due_date" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Observações</label>
+                            <textarea class="form-control" name="notes" rows="2" placeholder="Informações adicionais (opcional)"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Adicionar Conta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

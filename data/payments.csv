@@ -1,0 +1,4 @@
+id,subscription_id,amount,payment_date,payment_method,status,created_at
+1,1,180.0,2025-11-20,cartao_credito,pago,2025-11-20 13:41:07
+2,2,160.0,2025-11-20,cartao_credito,pago,2025-11-20 14:55:07
+3,2,160.0,2025-11-20,cartao_credito,pago,2025-11-20 19:17:00

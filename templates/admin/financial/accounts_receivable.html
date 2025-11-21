@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}Contas a Receber - Estacione+{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-arrow-down-circle"></i> Contas a Receber</h2>
+            <p class="text-muted mb-0">Gestão de recebimentos e cobranças</p>
+        </div>
+        <a href="{{ url_for('list_subscriptions') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nova Assinatura
+        </a>
+    </div>
+    
+    <!-- Cards Estatísticos -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #4a5568;">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ total_pendente|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Total Pendente</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #48bb78;">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ total_pago|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Recebido no Mês</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fc8181;">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ total_vencido|default(0)|format_currency }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Vencidos</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #4a5568;">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" style="color: #2d3748;">{{ receivables|default([])|length }}</div>
+                    <div class="stat-label" style="color: #4a5568;">Total de Contas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="status">
+                        <option value="all">Todos</option>
+                        <option value="pendente" {{ 'selected' if status_filter == 'pendente' }}>Pendente</option>
+                        <option value="pago" {{ 'selected' if status_filter == 'pago' }}>Pago</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Data Início</label>
+                    <input type="date" class="form-select" name="start_date">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Data Fim</label>
+                    <input type="date" class="form-control" name="end_date">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                    <a href="{{ url_for('accounts_receivable') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tabela -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-table"></i> Listagem de Contas</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Descrição</th>
+                            <th>Valor</th>
+                            <th>Vencimento</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in receivables|default([]) %}
+                        <tr class="{{ 'table-danger' if item.status == 'vencido' else '' }}">
+                            <td>#{{ item.id }}</td>
+                            <td>{{ item.customer_name|default('-') }}</td>
+                            <td>{{ item.description }}</td>
+                            <td><strong>R$ {{ "%.2f"|format(item.amount|float) }}</strong></td>
+                            <td>{{ item.due_date_formatted|default('-') }}</td>
+                            <td>
+                                {% if item.status == 'pago' %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle"></i> Pago
+                                    </span>
+                                {% elif item.status == 'vencido' %}
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-exclamation-triangle"></i> Vencido
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-clock"></i> Pendente
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.status != 'pago' %}
+                                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#paymentModal{{ item.id }}">
+                                    <i class="bi bi-cash-coin"></i> Receber
+                                </button>
+                                {% else %}
+                                <span class="text-muted">
+                                    <i class="bi bi-check-circle"></i> Recebido
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        
+                        {% if not receivables %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                <p class="mt-2">Nenhuma conta a receber encontrada</p>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modais de Pagamento -->
+{% for item in receivables|default([]) %}
+<div class="modal fade" id="paymentModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-cash-coin text-success me-2"></i>Confirmar Recebimento
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Cliente: <strong>{{ item.customer_name }}</strong></p>
+                <p class="mb-2">Descrição: <strong>{{ item.description }}</strong></p>
+                <p class="mb-3">Valor: <strong class="text-success fs-5">R$ {{ "%.2f"|format(item.amount|float) }}</strong></p>
+                
+                <form id="paymentForm{{ item.id }}" action="{{ url_for('receive_payment', receivable_id=item.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Método de Pagamento</label>
+                        <select class="form-select" name="payment_method" required>
+                            <option value="dinheiro">Dinheiro</option>
+                            <option value="pix">PIX</option>
+                            <option value="cartao_credito">Cartão de Crédito</option>
+                            <option value="cartao_debito">Cartão de Débito</option>
+                            <option value="transferencia">Transferência Bancária</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <button type="submit" form="paymentForm{{ item.id }}" class="btn btn-success">
+                    <i class="bi bi-check-lg"></i> Confirmar Recebimento
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

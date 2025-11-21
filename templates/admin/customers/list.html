@@ -1,0 +1,641 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Clientes - Estacione+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Gerenciar Clientes</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newCustomerModal">
+                <i class="bi bi-plus-lg"></i> Adicionar Cliente
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-5">
+                    <label for="search" class="form-label">Buscar</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           value="{{ request.args.get('search', '') }}" 
+                           placeholder="Nome, CPF ou Placa do veículo"
+                           autocomplete="off">
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Todos</option>
+                        <option value="ativo" {{ 'selected' if request.args.get('status') == 'ativo' else '' }}>Ativos</option>
+                        <option value="inativo" {{ 'selected' if request.args.get('status') == 'inativo' else '' }}>Inativos</option>
+                        <option value="inadimplente" {{ 'selected' if request.args.get('status') == 'inadimplente' else '' }}>Inadimplentes</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Filtrar</button>
+                    <a href="{{ url_for('list_customers') }}" class="btn btn-outline-secondary">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela de Clientes -->
+    <div class="card">
+        <div class="card-body">
+            {% if customers %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>CPF</th>
+                            <th>Email</th>
+                            <th>Telefone</th>
+                            <th>Status</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td class="fw-bold">{{ customer.name }}</td>
+                            <td>{{ customer.cpf|format_cpf if customer.cpf else '-' }}</td>
+                            <td>{{ customer.email if customer.email else '-' }}</td>
+                            <td>{{ customer.phone if customer.phone else '-' }}</td>
+                            <td>
+                                {% if customer.status == 'ativo' %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% elif customer.status == 'inativo' %}
+                                    <span class="badge bg-secondary">Inativo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inadimplente</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary edit-customer-btn" 
+                                            data-bs-toggle="modal" data-bs-target="#editCustomerModal"
+                                            data-id="{{ customer.id }}"
+                                            data-name="{{ customer.name }}"
+                                            data-email="{{ customer.email }}"
+                                            data-phone="{{ customer.phone }}"
+                                            data-phone2="{{ customer.phone2 }}"
+                                            data-cpf="{{ customer.cpf }}"
+                                            data-rg="{{ customer.rg }}"
+                                            data-birth-date="{{ customer.birth_date }}"
+                                            data-cep="{{ customer.cep }}"
+                                            data-street="{{ customer.street }}"
+                                            data-number="{{ customer.number }}"
+                                            data-complement="{{ customer.complement }}"
+                                            data-neighborhood="{{ customer.neighborhood }}"
+                                            data-city="{{ customer.city }}"
+                                            data-state="{{ customer.state }}"
+                                            data-address="{{ customer.address }}"
+                                            data-notes="{{ customer.notes }}"
+                                            data-status="{{ customer.status }}"
+                                            title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-customer-btn" 
+                                            data-id="{{ customer.id }}"
+                                            data-name="{{ customer.name }}"
+                                            title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% else %}
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="bi bi-people display-1 text-muted"></i>
+                </div>
+                <h4>Nenhum cliente encontrado</h4>
+                <p class="text-muted">
+                    {% if request.args.get('search') or request.args.get('status') %}
+                        Nenhum cliente corresponde aos filtros aplicados.
+                        <a href="{{ url_for('list_customers') }}" class="text-primary">Limpar filtros</a>
+                    {% else %}
+                        Você ainda não possui clientes cadastrados.
+                        <a href="{{ url_for('add_customer') }}" class="text-primary">Adicionar cliente</a>
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteCustomerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Tem certeza que deseja excluir o cliente <strong id="delete_customer_name"></strong>?</p>
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <strong>Atenção:</strong> Esta ação não poderá ser desfeita e todos os dados do cliente serão removidos.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <form id="deleteCustomerForm" method="POST" class="d-inline">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Confirmar Exclusão
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Novo Cliente -->
+<div class="modal fade" id="newCustomerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-plus text-primary me-2"></i>Novo Cliente
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('add_customer') }}" method="POST">
+                <div class="modal-body">
+                    <!-- Dados Pessoais -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-person me-2"></i>Dados Pessoais</h6>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Nome Completo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="name" 
+                                   placeholder="Nome completo do cliente" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" class="form-control" name="email" 
+                                   placeholder="email@exemplo.com" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Telefone <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="phone" 
+                                   placeholder="(00) 00000-0000" maxlength="15" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Telefone 2</label>
+                            <input type="text" class="form-control" name="phone2" 
+                                   placeholder="(00) 00000-0000" maxlength="15">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                CPF <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="cpf" 
+                                   placeholder="000.000.000-00" maxlength="14" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">RG</label>
+                            <input type="text" class="form-control" name="rg" 
+                                   placeholder="00.000.000-0" maxlength="20">
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label class="form-label">Data de Nascimento</label>
+                            <input type="date" class="form-control" name="birth_date">
+                        </div>
+                    </div>
+                    
+                    <!-- Endereço -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-geo-alt me-2"></i>Endereço</h6>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">CEP</label>
+                            <input type="text" class="form-control" name="cep" 
+                                   placeholder="00000-000" maxlength="9">
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <label class="form-label">Rua</label>
+                            <input type="text" class="form-control" name="street" 
+                                   placeholder="Nome da rua">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Número</label>
+                            <input type="text" class="form-control" name="number" 
+                                   placeholder="123">
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <label class="form-label">Complemento</label>
+                            <input type="text" class="form-control" name="complement" 
+                                   placeholder="Apto, Bloco, etc.">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Bairro</label>
+                            <input type="text" class="form-control" name="neighborhood" 
+                                   placeholder="Bairro">
+                        </div>
+                        
+                        <div class="col-md-5">
+                            <label class="form-label">Cidade</label>
+                            <input type="text" class="form-control" name="city" 
+                                   placeholder="Cidade">
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" name="state">
+                                <option value="">Selecione</option>
+                                <option value="AC">AC</option>
+                                <option value="AL">AL</option>
+                                <option value="AP">AP</option>
+                                <option value="AM">AM</option>
+                                <option value="BA">BA</option>
+                                <option value="CE">CE</option>
+                                <option value="DF">DF</option>
+                                <option value="ES">ES</option>
+                                <option value="GO">GO</option>
+                                <option value="MA">MA</option>
+                                <option value="MT">MT</option>
+                                <option value="MS">MS</option>
+                                <option value="MG">MG</option>
+                                <option value="PA">PA</option>
+                                <option value="PB">PB</option>
+                                <option value="PR">PR</option>
+                                <option value="PE">PE</option>
+                                <option value="PI">PI</option>
+                                <option value="RJ">RJ</option>
+                                <option value="RN">RN</option>
+                                <option value="RS">RS</option>
+                                <option value="RO">RO</option>
+                                <option value="RR">RR</option>
+                                <option value="SC">SC</option>
+                                <option value="SP">SP</option>
+                                <option value="SE">SE</option>
+                                <option value="TO">TO</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Observações e Status -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-chat-left-text me-2"></i>Observações e Status</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Observações</label>
+                            <textarea class="form-control" name="notes" rows="3" 
+                                      placeholder="Informações adicionais sobre o cliente..."></textarea>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Status <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" name="status" required>
+                                <option value="ativo" selected>Ativo</option>
+                                <option value="inativo">Inativo</option>
+                                <option value="inadimplente">Inadimplente</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>Campos marcados com <span class="text-danger">*</span> são obrigatórios</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Salvar Cliente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Cliente -->
+<div class="modal fade" id="editCustomerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil text-primary me-2"></i>Editar Cliente
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editCustomerForm" method="POST">
+                <input type="hidden" name="customer_id" id="edit_customer_id">
+                <div class="modal-body">
+                    <!-- Dados Pessoais -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-person me-2"></i>Dados Pessoais</h6>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Nome Completo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="name" id="edit_name"
+                                   placeholder="Nome completo do cliente" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" class="form-control" name="email" id="edit_email"
+                                   placeholder="email@exemplo.com" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Telefone <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="phone" id="edit_phone"
+                                   placeholder="(00) 00000-0000" maxlength="15" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Telefone 2</label>
+                            <input type="text" class="form-control" name="phone2" id="edit_phone2"
+                                   placeholder="(00) 00000-0000" maxlength="15">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                CPF <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="cpf" id="edit_cpf"
+                                   placeholder="000.000.000-00" maxlength="14" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">RG</label>
+                            <input type="text" class="form-control" name="rg" id="edit_rg"
+                                   placeholder="00.000.000-0" maxlength="20">
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label class="form-label">Data de Nascimento</label>
+                            <input type="date" class="form-control" name="birth_date" id="edit_birth_date">
+                        </div>
+                    </div>
+                    
+                    <!-- Endereço -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-geo-alt me-2"></i>Endereço</h6>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">CEP</label>
+                            <input type="text" class="form-control" name="cep" id="edit_cep"
+                                   placeholder="00000-000" maxlength="9">
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <label class="form-label">Rua</label>
+                            <input type="text" class="form-control" name="street" id="edit_street"
+                                   placeholder="Nome da rua">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Número</label>
+                            <input type="text" class="form-control" name="number" id="edit_number"
+                                   placeholder="123">
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <label class="form-label">Complemento</label>
+                            <input type="text" class="form-control" name="complement" id="edit_complement"
+                                   placeholder="Apto, Bloco, etc.">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Bairro</label>
+                            <input type="text" class="form-control" name="neighborhood" id="edit_neighborhood"
+                                   placeholder="Bairro">
+                        </div>
+                        
+                        <div class="col-md-5">
+                            <label class="form-label">Cidade</label>
+                            <input type="text" class="form-control" name="city" id="edit_city"
+                                   placeholder="Cidade">
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" name="state" id="edit_state">
+                                <option value="">Selecione</option>
+                                <option value="AC">AC</option>
+                                <option value="AL">AL</option>
+                                <option value="AP">AP</option>
+                                <option value="AM">AM</option>
+                                <option value="BA">BA</option>
+                                <option value="CE">CE</option>
+                                <option value="DF">DF</option>
+                                <option value="ES">ES</option>
+                                <option value="GO">GO</option>
+                                <option value="MA">MA</option>
+                                <option value="MT">MT</option>
+                                <option value="MS">MS</option>
+                                <option value="MG">MG</option>
+                                <option value="PA">PA</option>
+                                <option value="PB">PB</option>
+                                <option value="PR">PR</option>
+                                <option value="PE">PE</option>
+                                <option value="PI">PI</option>
+                                <option value="RJ">RJ</option>
+                                <option value="RN">RN</option>
+                                <option value="RS">RS</option>
+                                <option value="RO">RO</option>
+                                <option value="RR">RR</option>
+                                <option value="SC">SC</option>
+                                <option value="SP">SP</option>
+                                <option value="SE">SE</option>
+                                <option value="TO">TO</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Observações e Status -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-chat-left-text me-2"></i>Observações e Status</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Observações</label>
+                            <textarea class="form-control" name="notes" id="edit_notes" rows="3"
+                                      placeholder="Informações adicionais sobre o cliente..."></textarea>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Status <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" name="status" id="edit_status" required>
+                                <option value="ativo">Ativo</option>
+                                <option value="inativo">Inativo</option>
+                                <option value="inadimplente">Inadimplente</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>Campos marcados com <span class="text-danger">*</span> são obrigatórios</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Atualizar Cliente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Formata CPF enquanto digita
+$(document).on('input', 'input[name="cpf"]', function() {
+    let value = $(this).val().replace(/\D/g, '');
+    
+    if (value.length > 11) {
+        value = value.substring(0, 11);
+    }
+    
+    if (value.length > 9) {
+        value = value.substring(0, 3) + '.' + value.substring(3, 6) + '.' + value.substring(6, 9) + '-' + value.substring(9);
+    } else if (value.length > 6) {
+        value = value.substring(0, 3) + '.' + value.substring(3, 6) + '.' + value.substring(6);
+    } else if (value.length > 3) {
+        value = value.substring(0, 3) + '.' + value.substring(3);
+    }
+    
+    $(this).val(value);
+});
+
+// Formata telefone enquanto digita
+$(document).on('input', 'input[name="phone"], input[name="phone2"]', function() {
+    let value = $(this).val().replace(/\D/g, '');
+    
+    if (value.length > 11) {
+        value = value.substring(0, 11);
+    }
+    
+    if (value.length > 10) {
+        value = '(' + value.substring(0, 2) + ') ' + value.substring(2, 7) + '-' + value.substring(7);
+    } else if (value.length > 6) {
+        value = '(' + value.substring(0, 2) + ') ' + value.substring(2, 6) + '-' + value.substring(6);
+    } else if (value.length > 2) {
+        value = '(' + value.substring(0, 2) + ') ' + value.substring(2);
+    }
+    
+    $(this).val(value);
+});
+
+// Formata CEP enquanto digita
+$(document).on('input', 'input[name="cep"]', function() {
+    let value = $(this).val().replace(/\D/g, '');
+    
+    if (value.length > 8) {
+        value = value.substring(0, 8);
+    }
+    
+    if (value.length > 5) {
+        value = value.substring(0, 5) + '-' + value.substring(5);
+    }
+    
+    $(this).val(value);
+});
+
+// Modal de Edição
+$(document).on('click', '.edit-customer-btn', function() {
+    const customerId = $(this).data('id');
+    const name = $(this).data('name');
+    const email = $(this).data('email');
+    const phone = $(this).data('phone');
+    const phone2 = $(this).data('phone2');
+    const cpf = $(this).data('cpf');
+    const rg = $(this).data('rg');
+    const birthDate = $(this).data('birth-date');
+    const cep = $(this).data('cep');
+    const street = $(this).data('street');
+    const number = $(this).data('number');
+    const complement = $(this).data('complement');
+    const neighborhood = $(this).data('neighborhood');
+    const city = $(this).data('city');
+    const state = $(this).data('state');
+    const address = $(this).data('address');
+    const notes = $(this).data('notes');
+    const status = $(this).data('status');
+    
+    $('#edit_customer_id').val(customerId);
+    $('#edit_name').val(name);
+    $('#edit_email').val(email);
+    $('#edit_phone').val(phone);
+    $('#edit_phone2').val(phone2 || '');
+    $('#edit_cpf').val(cpf);
+    $('#edit_rg').val(rg || '');
+    $('#edit_birth_date').val(birthDate || '');
+    $('#edit_cep').val(cep || '');
+    $('#edit_street').val(street || '');
+    $('#edit_number').val(number || '');
+    $('#edit_complement').val(complement || '');
+    $('#edit_neighborhood').val(neighborhood || '');
+    $('#edit_city').val(city || '');
+    $('#edit_state').val(state || '');
+    $('#edit_notes').val(notes || '');
+    $('#edit_status').val(status || 'ativo');
+    
+    $('#editCustomerForm').attr('action', `/admin/customers/edit/${customerId}`);
+});
+
+// Modal de Exclusão
+$(document).on('click', '.delete-customer-btn', function() {
+    const customerId = $(this).data('id');
+    const name = $(this).data('name');
+    
+    $('#delete_customer_name').text(name);
+    $('#deleteCustomerForm').attr('action', `/admin/customers/delete/${customerId}`);
+    
+    // Abre o modal de exclusão
+    $('#deleteCustomerModal').modal('show');
+});
+</script>
+{% endblock %}

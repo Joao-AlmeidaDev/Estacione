@@ -1,0 +1,4 @@
+id,vehicle_id,action,changes,user_id,created_at
+1,1,update,"{\"model\": [\"Gol 1.0\", \"Gol 1.0 MI\"], \"color\": [\"Prata\", \"Prata Metálico\"]}",1,2025-11-10 09:15:00
+2,1,add_photo,"{\"photo\": \"vehicle_1_1.jpg\"}",2,2025-11-15 14:20:00
+3,1,add_document,"{\"document\": \"CRLV 2025\", \"type\": \"crlv\"}",1,2025-11-16 11:05:00

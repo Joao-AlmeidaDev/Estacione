@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Meu Painel{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Painel do Cliente</h1>
+    <p>Bem-vindo, {{ current_user.username }}.</p>
+    
+    <div class="card">
+        <div class="card-header">
+            Minhas Informações
+        </div>
+        <div class="card-body">
+            <p><strong>Nome:</strong> [Nome do Cliente]</p>
+            <p><strong>Veículo:</strong> [Placa do Veículo] - [Modelo]</p>
+            <p><strong>Plano:</strong> [Nome do Plano]</p>
+            <p><strong>Status do Pagamento:</strong> <span class="badge bg-success">Em dia</span></p>
+        </div>
+    </div>
+{% endblock %}

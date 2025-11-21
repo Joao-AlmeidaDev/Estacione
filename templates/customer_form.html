@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ title }}</h1>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                <label for="name" class="form-label">{{ form.name.label }}</label>
+                {{ form.name(class="form-control", id="name") }}
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">{{ form.email.label }}</label>
+                {{ form.email(class="form-control", id="email") }}
+            </div>
+            <div class="mb-3">
+                <label for="phone" class="form-label">{{ form.phone.label }}</label>
+                {{ form.phone(class="form-control", id="phone") }}
+            </div>
+            <div class="mb-3">
+                <label for="address" class="form-label">{{ form.address.label }}</label>
+                {{ form.address(class="form-control", id="address", rows="3") }}
+            </div>
+            <a href="{{ url_for('list_customers') }}" class="btn btn-secondary">Cancelar</a>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+</div>
+{% endblock %}

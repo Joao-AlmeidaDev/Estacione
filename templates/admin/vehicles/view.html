@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}{{ vehicle.plate }} - Detalhes do Veículo - Estacione+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="bi bi-car-front me-2"></i>
+            Detalhes do Veículo - {{ vehicle.plate }}
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a href="{{ url_for('list_vehicles') }}" class="btn btn-sm btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+            <a href="{{ url_for('edit_vehicle', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-primary me-2">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="bi bi-trash"></i> Excluir
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Informações Básicas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informações do Veículo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold text-muted">Placa</label>
+                            <p class="mb-0"><strong>{{ vehicle.plate }}</strong></p>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold text-muted">Proprietário</label>
+                            <p class="mb-0">
+                                <a href="{{ url_for('edit_customer', customer_id=vehicle.customer.id) }}" class="text-decoration-none">
+                                    {{ vehicle.customer.name }}
+                                </a>
+                            </p>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold text-muted">Marca</label>
+                            <p class="mb-0">{{ vehicle.brand }}</p>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold text-muted">Modelo</label>
+                            <p class="mb-0">{{ vehicle.model }}</p>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-muted">Cor</label>
+                            <p class="mb-0">{{ vehicle.color or 'Não informado' }}</p>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-muted">Ano</label>
+                            <p class="mb-0">{{ vehicle.year or 'N/A' }}</p>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-muted">Tipo</label>
+                            <p class="mb-0">{{ vehicle.type|default('Não informado', true) }}</p>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-muted">Status</label>
+                            <p class="mb-0">
+                                <span class="badge bg-{{ 'success' if vehicle.status == 'ativo' else 'secondary' }}">
+                                    {{ vehicle.status|upper }}
+                                </span>
+                            </p>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-muted">Cadastrado em</label>
+                            <p class="mb-0">{{ vehicle.created_at.strftime('%d/%m/%Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Documentos -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Documentos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-muted">RENAVAM</label>
+                            <p class="mb-0">{{ vehicle.renavam or 'Não informado' }}</p>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-muted">Chassi</label>
+                            <p class="mb-0">{{ vehicle.chassis or 'Não informado' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Galeria de Fotos -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-images me-2"></i>Fotos do Veículo</h5>
+                    {% if vehicle.photos and vehicle.photos|length > 1 %}
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#galleryModal">
+                        Ver todas ({{ vehicle.photos|length }})
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if vehicle.photos and vehicle.photos|length > 0 %}
+                    <div class="row g-3">
+                        {% for photo in vehicle.photos %}
+                        <div class="col-md-3">
+                            <div class="card h-100">
+                                <img src="{{ url_for('static', filename='uploads/vehicles/' + photo.filename) }}" 
+                                     class="card-img-top" alt="Foto do veículo" 
+                                     style="height: 150px; object-fit: cover; cursor: pointer;"
+                                     data-bs-toggle="modal" data-bs-target="#photoModal{{ loop.index }}">
+                                <div class="card-body p-2 bg-light">
+                                    <small class="text-muted d-block text-truncate">
+                                        {{ photo.created_at.strftime('%d/%m/%Y') if photo.created_at else 'Sem data' }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-image fs-1 mb-2 d-block"></i>
+                        <p class="mb-0">Nenhuma foto cadastrada</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Observações -->
+            {% if vehicle.notes %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-chat-left-text me-2"></i>Observações</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ vehicle.notes }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Movimentações -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Movimentações</h5>
+                    <span class="badge bg-primary">{{ vehicle.movements|length if vehicle.movements else 0 }}</span>
+                </div>
+                <div class="card-body">
+                    {% if vehicle.movements and vehicle.movements|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Tipo</th>
+                                    <th>Observações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for movement in vehicle.movements %}
+                                <tr>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ movement.entry_date.strftime('%d/%m/%Y') if movement.entry_date else 'N/A' }}<br>
+                                            {{ movement.entry_date.strftime('%H:%M') if movement.entry_date else '' }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if movement.type == 'entrada' else 'warning' }}">
+                                            {{ movement.type|upper if movement.type else 'N/A' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ movement.notes or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-clock-history fs-1 mb-2 d-block"></i>
+                        <p class="mb-0">Nenhuma movimentação registrada</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Serviços -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-tools me-2"></i>Serviços</h5>
+                    <span class="badge bg-primary">{{ vehicle.services|length if vehicle.services else 0 }}</span>
+                </div>
+                <div class="card-body">
+                    {% if vehicle.services and vehicle.services|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Tipo de Serviço</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for service in vehicle.services %}
+                                <tr>
+                                    <td>
+                                        <small>{{ service.service_date.strftime('%d/%m/%Y') if service.service_date else 'N/A' }}</small>
+                                    </td>
+                                    <td>{{ service.service_type or 'N/A' }}</td>
+                                    <td>R$ {{ "%.2f"|format(service.cost|float) if service.cost else '0,00' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if service.status == 'concluído' else 'warning' if service.status == 'em andamento' else 'secondary' }}">
+                                            {{ service.status|upper if service.status else 'N/A' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-tools fs-1 mb-2 d-block"></i>
+                        <p class="mb-0">Nenhum serviço registrado</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Histórico -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>Histórico</h5>
+                    <span class="badge bg-primary">{{ vehicle.history|length if vehicle.history else 0 }}</span>
+                </div>
+                <div class="card-body">
+                    {% if vehicle.history and vehicle.history|length > 0 %}
+                    <div class="timeline">
+                        {% for event in vehicle.history|reverse %}
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-circle-fill text-primary" style="font-size: 0.5rem;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="mb-1">{{ event.event_type or 'Evento' }}</h6>
+                                        <small class="text-muted">
+                                            {{ event.event_date.strftime('%d/%m/%Y %H:%M') if event.event_date else 'N/A' }}
+                                        </small>
+                                    </div>
+                                    <p class="text-muted mb-0 small">{{ event.description or 'Sem descrição' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-journal-text fs-1 mb-2 d-block"></i>
+                        <p class="mb-0">Nenhum histórico registrado</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modais de Fotos -->
+{% if vehicle.photos and vehicle.photos|length > 0 %}
+{% for photo in vehicle.photos %}
+<div class="modal fade" id="photoModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">Foto {{ loop.index }} de {{ vehicle.photos|length }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body p-0">
+                <img src="{{ url_for('static', filename='uploads/vehicles/' + photo.filename) }}" 
+                     class="img-fluid w-100" alt="Foto {{ loop.index }}">
+            </div>
+            <div class="modal-footer">
+                <small class="text-muted me-auto">
+                    {{ photo.created_at.strftime('%d/%m/%Y %H:%M') if photo.created_at else 'Sem data' }}
+                </small>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modal da Galeria Completa -->
+<div class="modal fade" id="galleryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">Galeria de Fotos - {{ vehicle.brand }} {{ vehicle.model }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    {% for photo in vehicle.photos %}
+                    <div class="col-md-4 col-6">
+                        <div class="card h-100">
+                            <img src="{{ url_for('static', filename='uploads/vehicles/' + photo.filename) }}" 
+                                 class="card-img-top" alt="Foto {{ loop.index }}" 
+                                 style="height: 200px; object-fit: cover; cursor: pointer;"
+                                 data-bs-toggle="modal" data-bs-target="#photoModal{{ loop.index }}">
+                            <div class="card-body p-2 bg-light text-center">
+                                <small class="text-muted">
+                                    Foto {{ loop.index }} - {{ photo.created_at.strftime('%d/%m/%Y') if photo.created_at else 'Sem data' }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Tem certeza que deseja excluir o veículo <strong>{{ vehicle.plate }}</strong>?</p>
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <strong>Atenção:</strong> Esta ação não poderá ser desfeita e todos os dados do veículo serão removidos permanentemente.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <form action="{{ url_for('delete_vehicle', vehicle_id=vehicle.id) }}" method="POST" class="d-inline">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Confirmar Exclusão
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header {
+    background-color: #f7fafc;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.card-header h5 {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.form-label.fw-semibold {
+    color: #4a5568;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1rem;
+    bottom: -1rem;
+    width: 2px;
+    background-color: #e2e8f0;
+}
+</style>
+
+{% endblock %}

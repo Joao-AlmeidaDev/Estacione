@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Planos - Estacione+{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-card-list"></i> Planos</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newPlanModal">
+            <i class="bi bi-plus-circle"></i> Novo Plano
+        </button>
+    </div>
+    
+    <div class="row">
+        {% for plan in plans %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title">{{ plan.name }}</h5>
+                        <span class="badge bg-{{ 'success' if plan.is_active else 'secondary' }}">
+                            {{ 'Ativo' if plan.is_active else 'Inativo' }}
+                        </span>
+                    </div>
+                    <p class="card-text text-muted">{{ plan.description or 'Sem descrição' }}</p>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-primary mb-0">{{ plan.price|format_currency }}</h3>
+                            <small class="text-muted">{{ plan.duration_days }} dias</small>
+                        </div>
+                        <button class="btn btn-outline-primary edit-plan-btn" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editPlanModal"
+                                data-id="{{ plan.id }}"
+                                data-name="{{ plan.name }}"
+                                data-description="{{ plan.description }}"
+                                data-price="{{ plan.price }}"
+                                data-duration="{{ plan.duration_days }}">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Nenhum plano cadastrado ainda.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal Novo Plano -->
+<div class="modal fade" id="newPlanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle text-primary me-2"></i>Novo Plano
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('add_plan') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome do Plano *</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Descrição</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Preço (R$) *</label>
+                            <input type="number" class="form-control" name="price" step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Duração (dias) *</label>
+                            <input type="number" class="form-control" name="duration_days" min="1" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Cadastrar Plano
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Plano -->
+<div class="modal fade" id="editPlanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil text-primary me-2"></i>Editar Plano
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editPlanForm" method="POST">
+                <input type="hidden" name="plan_id" id="edit_plan_id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome do Plano *</label>
+                        <input type="text" class="form-control" name="name" id="edit_name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Descrição</label>
+                        <textarea class="form-control" name="description" id="edit_description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Preço (R$) *</label>
+                            <input type="number" class="form-control" name="price" id="edit_price" step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Duração (dias) *</label>
+                            <input type="number" class="form-control" name="duration_days" id="edit_duration" min="1" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Atualizar Plano
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Preencher modal de edição
+$(document).on('click', '.edit-plan-btn', function() {
+    const planId = $(this).data('id');
+    const planName = $(this).data('name');
+    const planDescription = $(this).data('description');
+    const planPrice = $(this).data('price');
+    const planDuration = $(this).data('duration');
+    
+    $('#edit_plan_id').val(planId);
+    $('#edit_name').val(planName);
+    $('#edit_description').val(planDescription);
+    $('#edit_price').val(planPrice);
+    $('#edit_duration').val(planDuration);
+    
+    // Atualizar action do formulário
+    $('#editPlanForm').attr('action', `/admin/plans/edit/${planId}`);
+});
+</script>
+{% endblock %}

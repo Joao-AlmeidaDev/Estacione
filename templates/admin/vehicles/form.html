@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Editar' if form.id.data else 'Adicionar' }} Veículo - Estacione+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="bi bi-{{ 'pencil-square' if form.id.data else 'car-front' }} me-2"></i>
+            {{ 'Editar' if form.id.data else 'Adicionar' }} Veículo
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a href="{{ url_for('list_vehicles') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {{ form.hidden_tag() }}
+                
+                <!-- Dados do Veículo -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Dados do Veículo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">{{ form.plate.label.text }}</label>
+                                {{ form.plate(class="form-control text-uppercase" + (" is-invalid" if form.plate.errors else ""), 
+                                    placeholder="AAA-0000", 
+                                    oninput="formatPlate(this)") }}
+                                {% for error in form.plate.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">{{ form.customer_id.label.text }}</label>
+                                {{ form.customer_id(class="form-select" + (" is-invalid" if form.customer_id.errors else "")) }}
+                                {% for error in form.customer_id.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">{{ form.brand.label.text }}</label>
+                                {{ form.brand(class="form-control" + (" is-invalid" if form.brand.errors else ""), 
+                                    placeholder="Ex: Fiat, Volkswagen, Toyota") }}
+                                {% for error in form.brand.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">{{ form.model.label.text }}</label>
+                                {{ form.model(class="form-control" + (" is-invalid" if form.model.errors else ""), 
+                                    placeholder="Ex: Gol, Palio, Corolla") }}
+                                {% for error in form.model.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">{{ form.color_name.label.text }}</label>
+                                {{ form.color_name(class="form-control" + (" is-invalid" if form.color_name.errors else ""), 
+                                    placeholder="Ex: Prata, Preto, Branco") }}
+                                {% for error in form.color_name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">{{ form.year.label.text }}</label>
+                                {{ form.year(class="form-control" + (" is-invalid" if form.year.errors else ""), 
+                                    placeholder="2024", type="number", min="1900", max="2100") }}
+                                {% for error in form.year.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">{{ form.type.label.text }}</label>
+                                {{ form.type(class="form-select" + (" is-invalid" if form.type.errors else "")) }}
+                                {% for error in form.type.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Documentos -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Documentos</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">{{ form.renavam.label.text }}</label>
+                                {{ form.renavam(class="form-control" + (" is-invalid" if form.renavam.errors else ""), 
+                                    placeholder="Número do RENAVAM") }}
+                                {% for error in form.renavam.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">{{ form.chassis.label.text }}</label>
+                                {{ form.chassis(class="form-control text-uppercase" + (" is-invalid" if form.chassis.errors else ""), 
+                                    placeholder="Número do Chassi") }}
+                                {% for error in form.chassis.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fotos -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-images me-2"></i>Fotos do Veículo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {% if form.photos.data %}
+                                {% for photo in form.photos.data %}
+                                <div class="col-md-3">
+                                    <div class="card">
+                                        <img src="{{ url_for('static', filename='uploads/vehicles/' + photo.filename) }}" 
+                                             class="card-img-top" alt="Foto do veículo" style="height: 150px; object-fit: cover;">
+                                        <div class="card-body p-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       name="delete_photos" value="{{ photo.id }}" 
+                                                       id="delete_photo_{{ photo.id }}">
+                                                <label class="form-check-label small text-danger" 
+                                                       for="delete_photo_{{ photo.id }}">
+                                                    Excluir esta foto
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                            
+                            <div class="col-md-3">
+                                <div class="card border-dashed h-100">
+                                    <div class="card-body d-flex flex-column align-items-center justify-content-center text-center" 
+                                         style="min-height: 200px; cursor: pointer;">
+                                        <i class="bi bi-cloud-upload fs-1 text-muted mb-2"></i>
+                                        <p class="mb-2 text-muted">Clique ou arraste<br>fotos aqui</p>
+                                        <input type="file" name="photos" id="photos" multiple 
+                                               class="d-none" accept="image/*">
+                                        <button type="button" class="btn btn-sm btn-primary" 
+                                                onclick="document.getElementById('photos').click()">
+                                            <i class="bi bi-plus-lg"></i> Adicionar Fotos
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="photo-preview" class="row g-3 mt-2"></div>
+                    </div>
+                </div>
+                
+                <!-- Observações e Status -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-chat-left-text me-2"></i>Observações e Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold">{{ form.notes.label.text }}</label>
+                                <small class="text-muted">(Opcional)</small>
+                                {{ form.notes(class="form-control" + (" is-invalid" if form.notes.errors else ""), 
+                                    rows="4", placeholder="Informações adicionais sobre o veículo...") }}
+                                {% for error in form.notes.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">{{ form.status.label.text }}</label>
+                                {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else "")) }}
+                                {% for error in form.status.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botões de Ação -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('list_vehicles') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg"></i> Cancelar
+                            </a>
+                            <div>
+                                {% if form.id.data %}
+                                    <button type="button" class="btn btn-outline-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                        <i class="bi bi-trash"></i> Excluir
+                                    </button>
+                                {% endif %}
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg"></i> {{ 'Salvar Alterações' if form.id.data else 'Cadastrar Veículo' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+{% if form.id.data %}
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Tem certeza que deseja excluir este veículo?</p>
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <strong>Atenção:</strong> Esta ação não poderá ser desfeita e todos os dados do veículo serão removidos permanentemente.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <form action="{{ url_for('delete_vehicle', vehicle_id=form.id.data) }}" method="POST" class="d-inline">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Confirmar Exclusão
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Formata a placa do veículo (AAA-0000)
+function formatPlate(input) {
+    let value = input.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    
+    if (value.length > 7) {
+        value = value.substring(0, 7);
+    }
+    
+    if (value.length > 3) {
+        value = value.substring(0, 3) + '-' + value.substring(3);
+    }
+    
+    input.value = value;
+}
+
+// Preview de imagens ao selecionar arquivos
+const photoInput = document.getElementById('photos');
+const photoPreview = document.getElementById('photo-preview');
+
+if (photoInput) {
+    photoInput.addEventListener('change', function(e) {
+        photoPreview.innerHTML = '';
+        
+        if (this.files && this.files.length > 0) {
+            Array.from(this.files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const col = document.createElement('div');
+                        col.className = 'col-md-3';
+                        
+                        col.innerHTML = `
+                            <div class="card">
+                                <img src="${e.target.result}" class="card-img-top" alt="Preview" style="height: 150px; object-fit: cover;">
+                                <div class="card-body p-2 bg-light">
+                                    <small class="text-muted d-block text-truncate">${file.name}</small>
+                                </div>
+                            </div>
+                        `;
+                        
+                        photoPreview.appendChild(col);
+                    }
+                    
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    });
+}
+
+// Drag and drop para upload de fotos
+const dropArea = document.querySelector('.border-dashed');
+
+if (dropArea) {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, function() {
+            this.style.borderColor = '#4a5568';
+            this.style.backgroundColor = '#f7fafc';
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, function() {
+            this.style.borderColor = '';
+            this.style.backgroundColor = '';
+        }, false);
+    });
+
+    dropArea.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            photoInput.files = files;
+            photoInput.dispatchEvent(new Event('change'));
+        }
+    }, false);
+}
+
+// Validação do formulário Bootstrap
+(function () {
+    'use strict'
+    
+    var forms = document.querySelectorAll('.needs-validation')
+    
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+
+<style>
+.border-dashed {
+    border: 2px dashed #e2e8f0 !important;
+    transition: all 0.2s ease;
+}
+
+.border-dashed:hover {
+    border-color: #4a5568 !important;
+    background-color: #f7fafc !important;
+}
+
+.form-control-color {
+    cursor: pointer;
+}
+
+.card-header {
+    background-color: #f7fafc;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.card-header h5 {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.form-label.fw-semibold {
+    color: #4a5568;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}

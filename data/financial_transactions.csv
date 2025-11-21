@@ -1,0 +1,113 @@
+id,description,amount,date,category,type,related_id,created_at
+4,INSS,197.0,2025-11-20,Outros,despesa,1,2025-11-20 20:01:49
+5,Assinatura Hatch - João da Silva - Gol 1.0 MI,160.0,2025-11-20,assinatura,receita,1,2025-11-20 22:19:47
+6,Assinatura Hatch - João da Silva - Fiesta,160.0,2025-12-15,assinatura,receita,2,2025-11-20 22:19:47
+7,Assinatura Plano 1 - Márcio Cardoso - Kicks,160.0,2025-12-15,assinatura,receita,3,2025-11-20 22:19:47
+8,Assinatura Plano 1 - Renan Rodrigues - Tracker,160.0,2025-12-15,assinatura,receita,4,2025-11-20 22:19:47
+9,Assinatura Plano 1 - Priscila Santos - Versa,160.0,2025-12-15,assinatura,receita,5,2025-11-20 22:19:47
+10,Assinatura Plano 1 - Guilherme Almeida - T-Cross,160.0,2025-12-15,assinatura,receita,6,2025-11-20 22:19:47
+11,Assinatura Plano 1 - Roberta Barbosa - EcoSport,160.0,2025-12-15,assinatura,receita,7,2025-11-20 22:19:47
+12,Assinatura Plano 1 - Tatiana Correia - Hilux,160.0,2025-12-15,assinatura,receita,8,2025-11-20 22:19:47
+13,Assinatura Plano 1 - Bruna Moreira - Compass,160.0,2025-12-15,assinatura,receita,9,2025-11-20 22:19:47
+14,Assinatura Plano 1 - João Almeida - Ka,160.0,2025-12-15,assinatura,receita,10,2025-11-20 22:19:47
+15,Assinatura Plano 1 - Fernando Souza - Civic,160.0,2025-12-15,assinatura,receita,11,2025-11-20 22:19:47
+16,Assinatura Plano 1 - Matheus Cavalcanti - Yaris,160.0,2025-11-20,assinatura,receita,12,2025-11-20 22:19:47
+17,Assinatura Plano 1 - Bruna Alves - Civic,160.0,2025-11-20,assinatura,receita,13,2025-11-20 22:19:47
+18,Assinatura Plano 1 - Bruna Almeida - Tucson,160.0,2025-11-20,assinatura,receita,14,2025-11-20 22:19:47
+19,Assinatura Plano 1 - Leandro Freitas - Onix,160.0,2025-11-20,assinatura,receita,15,2025-11-20 22:19:47
+20,Assinatura Plano 1 - Fabiana Pinto - Versa,160.0,2025-11-20,assinatura,receita,16,2025-11-20 22:19:47
+21,Assinatura Plano 1 - Ana Melo - Uno,160.0,2025-11-20,assinatura,receita,17,2025-11-20 22:19:47
+22,Assinatura Plano 1 - Vanessa Andrade - Argo,160.0,2025-11-20,assinatura,receita,18,2025-11-20 22:19:47
+23,Assinatura Plano 1 - Eliane Correia - Frontier,160.0,2025-11-20,assinatura,receita,19,2025-11-20 22:19:47
+24,Assinatura Plano 1 - Adriana Martins - Polo,160.0,2025-11-20,assinatura,receita,20,2025-11-20 22:19:47
+25,Assinatura Plano 1 - Fernanda Castro - HR-V,160.0,2025-11-20,assinatura,receita,21,2025-11-20 22:19:47
+26,Assinatura Plano 1 - Jéssica Correia - Compass,160.0,2025-11-20,assinatura,receita,22,2025-11-20 22:19:47
+27,Assinatura Plano 1 - Vinícius Rocha - Ranger,160.0,2025-11-20,assinatura,receita,23,2025-11-20 22:19:47
+28,Assinatura Plano 1 - Gustavo Gomes - Frontier,160.0,2025-11-20,assinatura,receita,24,2025-11-20 22:19:47
+29,Assinatura Plano 1 - Amanda Lima - HR-V,160.0,2025-11-20,assinatura,receita,25,2025-11-20 22:19:47
+30,Assinatura Plano 1 - Fábio Souza - Frontier,160.0,2025-11-20,assinatura,receita,26,2025-11-20 22:19:47
+31,Assinatura Plano 1 - Marcelo Nascimento - Sandero,160.0,2025-11-20,assinatura,receita,27,2025-11-20 22:19:47
+32,Assinatura Plano 1 - Vinícius Souza - Yaris,160.0,2025-11-20,assinatura,receita,28,2025-11-20 22:19:47
+33,Assinatura Plano 1 - Pedro Souza - Yaris,160.0,2025-11-20,assinatura,receita,29,2025-11-20 22:19:47
+34,Assinatura Plano 1 - Cláudia Teixeira - Uno,160.0,2025-11-20,assinatura,receita,30,2025-11-20 22:19:47
+35,Assinatura Plano 1 - Anderson Almeida - HB20,160.0,2025-11-20,assinatura,receita,31,2025-11-20 22:19:47
+36,Assinatura Plano 1 - Vitor Ferreira - Creta,160.0,2025-11-20,assinatura,receita,32,2025-11-20 22:19:47
+37,Assinatura Plano 1 - Thiago Costa - Corolla,160.0,2025-11-20,assinatura,receita,33,2025-11-20 22:19:47
+38,Assinatura Plano 1 - Sandra Teixeira - HB20,160.0,2025-11-20,assinatura,receita,34,2025-11-20 22:19:47
+39,Assinatura Plano 1 - Aline Rodrigues - Mobi,160.0,2025-11-20,assinatura,receita,35,2025-11-20 22:19:47
+40,Assinatura Plano 1 - Amanda Monteiro - T-Cross,160.0,2025-11-20,assinatura,receita,36,2025-11-20 22:19:47
+41,Assinatura Plano 1 - Rafael Mendes - Kwid,160.0,2025-11-20,assinatura,receita,37,2025-11-20 22:19:47
+42,Assinatura Plano 1 - Marcelo Monteiro - Creta,160.0,2025-11-20,assinatura,receita,38,2025-11-20 22:19:47
+43,Assinatura Plano 1 - Paulo Barros - Gol,160.0,2025-11-20,assinatura,receita,39,2025-11-20 22:19:47
+44,Assinatura Plano 1 - Rosana Costa - Hilux,160.0,2025-11-20,assinatura,receita,40,2025-11-20 22:19:47
+45,Assinatura Plano 1 - Rafael Freitas - Compass,160.0,2025-11-20,assinatura,receita,41,2025-11-20 22:19:47
+46,Assinatura Plano 1 - Mônica Mendes - Gol,160.0,2025-11-20,assinatura,receita,42,2025-11-20 22:19:47
+47,Assinatura Plano 1 - Vitor Barros - Duster,160.0,2025-11-20,assinatura,receita,43,2025-11-20 22:19:47
+48,Assinatura Plano 1 - Letícia Correia - Onix,160.0,2025-11-20,assinatura,receita,44,2025-11-20 22:19:47
+49,Assinatura Plano 1 - Aline Andrade - Ranger,160.0,2025-11-20,assinatura,receita,45,2025-11-20 22:19:47
+50,Assinatura Plano 1 - Letícia Andrade - Compass,160.0,2025-11-20,assinatura,receita,46,2025-11-20 22:19:47
+51,Assinatura Plano 1 - Rodrigo Ribeiro - EcoSport,160.0,2025-11-20,assinatura,receita,47,2025-11-20 22:19:47
+52,Assinatura Plano 1 - Camila Nascimento - Tucson,160.0,2025-11-20,assinatura,receita,48,2025-11-20 22:19:47
+53,Assinatura Plano 1 - Vitor Teixeira - Tracker,160.0,2025-11-20,assinatura,receita,49,2025-11-20 22:19:47
+54,Assinatura Plano 1 - Patrícia Lima - City,160.0,2025-11-20,assinatura,receita,50,2025-11-20 22:19:47
+55,Assinatura Plano 1 - Vinícius Gomes - Tucson,160.0,2025-11-20,assinatura,receita,51,2025-11-20 22:19:47
+56,Assinatura Plano 1 - Tatiana Carvalho - Ka,160.0,2025-11-20,assinatura,receita,52,2025-11-20 22:19:47
+57,Assinatura Plano 1 - Raquel Campos - Kwid,160.0,2025-11-20,assinatura,receita,53,2025-11-20 22:19:47
+58,Assinatura Plano 1 - Márcio Dias - Ka,160.0,2025-11-20,assinatura,receita,54,2025-11-20 22:19:47
+59,Assinatura Plano 1 - Vanessa Ribeiro - Mobi,160.0,2025-11-20,assinatura,receita,55,2025-11-20 22:19:47
+60,Assinatura Plano 1 - Pedro Martins - Corolla,160.0,2025-11-20,assinatura,receita,56,2025-11-20 22:19:47
+61,Assinatura Plano 1 - Carlos Freitas - Argo,160.0,2025-11-20,assinatura,receita,57,2025-11-20 22:19:47
+62,Assinatura Plano 1 - Daniel Ribeiro - Sandero,160.0,2025-11-20,assinatura,receita,58,2025-11-20 22:19:47
+63,Assinatura Plano 1 - André Andrade - Argo,160.0,2025-11-20,assinatura,receita,59,2025-11-20 22:19:47
+64,Assinatura Plano 1 - Fábio Barros - Kwid,160.0,2025-11-20,assinatura,receita,60,2025-11-20 22:19:47
+65,Assinatura Plano 1 - Carlos Araújo - Renegade,160.0,2025-11-20,assinatura,receita,61,2025-11-20 22:19:47
+66,Assinatura Plano 1 - Gustavo Costa - Kicks,160.0,2025-11-20,assinatura,receita,62,2025-11-20 22:19:47
+67,Assinatura Plano 1 - Eduardo Santos - Tracker,160.0,2025-11-20,assinatura,receita,63,2025-11-20 22:19:47
+68,Assinatura Plano 1 - Ana Martins - Tracker,160.0,2025-11-20,assinatura,receita,64,2025-11-20 22:19:47
+69,Assinatura Plano 1 - Rosana Pereira - Ranger,160.0,2025-11-20,assinatura,receita,65,2025-11-20 22:19:47
+70,Assinatura Plano 1 - Eliane Cardoso - Duster,160.0,2025-11-20,assinatura,receita,66,2025-11-20 22:19:47
+71,Assinatura Plano 1 - Amanda Barbosa - Ka,160.0,2025-11-20,assinatura,receita,67,2025-11-20 22:19:47
+72,Assinatura Plano 1 - Anderson Cavalcanti - Uno,160.0,2025-11-20,assinatura,receita,68,2025-11-20 22:19:47
+73,Assinatura Plano 1 - Marcelo Ribeiro - Frontier,160.0,2025-11-20,assinatura,receita,69,2025-11-20 22:19:47
+74,Assinatura Plano 1 - Simone Oliveira - Compass,160.0,2025-11-20,assinatura,receita,70,2025-11-20 22:19:47
+75,Assinatura Plano 1 - Patrícia Martins - Yaris,160.0,2025-11-20,assinatura,receita,71,2025-11-20 22:19:47
+76,Assinatura Plano 1 - Bruno Lima - Frontier,160.0,2025-11-20,assinatura,receita,72,2025-11-20 22:19:47
+77,Assinatura Plano 1 - Fernando Ferreira - Toro,160.0,2025-11-20,assinatura,receita,73,2025-11-20 22:19:47
+78,Assinatura Plano 1 - Ricardo Barros - Toro,160.0,2025-11-20,assinatura,receita,74,2025-11-20 22:19:47
+79,Assinatura Plano 1 - Eliane Andrade - HB20,160.0,2025-11-20,assinatura,receita,75,2025-11-20 22:19:47
+80,Assinatura Plano 1 - William Melo - Frontier,160.0,2025-11-20,assinatura,receita,76,2025-11-20 22:19:47
+81,Assinatura Plano 1 - André Carvalho - EcoSport,160.0,2025-11-20,assinatura,receita,77,2025-11-20 22:19:47
+82,Assinatura Plano 1 - Renata Araújo - Yaris,160.0,2025-11-20,assinatura,receita,78,2025-11-20 22:19:47
+83,Assinatura Plano 1 - Leandro Souza - Duster,160.0,2025-11-20,assinatura,receita,79,2025-11-20 22:19:47
+84,Assinatura Plano 1 - Gabriela Barros - City,160.0,2025-11-20,assinatura,receita,80,2025-11-20 22:19:47
+85,Assinatura Plano 1 - Carlos Barbosa - HB20,160.0,2025-11-20,assinatura,receita,81,2025-11-20 22:19:47
+86,Assinatura Plano 1 - Cláudia Oliveira - Ranger,160.0,2025-11-20,assinatura,receita,82,2025-11-20 22:19:47
+87,Assinatura Plano 1 - Guilherme Campos - Polo,160.0,2025-11-20,assinatura,receita,83,2025-11-20 22:19:47
+88,Assinatura Plano 1 - Silvia Oliveira - Corolla,160.0,2025-11-20,assinatura,receita,84,2025-11-20 22:19:47
+89,Assinatura Plano 1 - Tatiana Almeida - Commander,160.0,2025-11-20,assinatura,receita,85,2025-11-20 22:19:47
+90,Assinatura Plano 1 - Vinícius Nascimento - Compass,160.0,2025-11-20,assinatura,receita,86,2025-11-20 22:19:47
+91,Assinatura Plano 1 - Luciana Souza - Tracker,160.0,2025-11-20,assinatura,receita,87,2025-11-20 22:19:47
+92,Assinatura Plano 2 - Roberto Cunha - Virtus,180.0,2025-11-20,assinatura,receita,88,2025-11-20 22:19:47
+93,Assinatura Plano 2 - Denise Rezende - Nivus,180.0,2025-11-20,assinatura,receita,89,2025-11-20 22:19:47
+94,Assinatura Plano 2 - Antonio Farias - Taos,180.0,2025-11-20,assinatura,receita,90,2025-11-20 22:19:47
+95,Assinatura Plano 2 - Vera Tavares - Pulse,180.0,2025-11-20,assinatura,receita,91,2025-11-20 22:19:47
+96,Assinatura Plano 2 - Luiz Moura - Fastback,180.0,2025-11-20,assinatura,receita,92,2025-11-20 22:19:47
+97,Assinatura Plano 2 - Cristiane Caldeira - Cronos,180.0,2025-11-20,assinatura,receita,93,2025-11-20 22:19:47
+98,Assinatura Plano 2 - Francisco Batista - Montana,180.0,2025-11-20,assinatura,receita,94,2025-11-20 22:19:47
+99,Assinatura Plano 2 - Eliana Machado - Spin,180.0,2025-11-20,assinatura,receita,95,2025-11-20 22:19:47
+100,Assinatura Plano 2 - Jorge Guimarães - Cruze,180.0,2025-11-20,assinatura,receita,96,2025-11-20 22:19:47
+101,Assinatura Plano 2 - Helena Lopes - Territory,180.0,2025-11-20,assinatura,receita,97,2025-11-20 22:19:47
+102,Assinatura Plano 2 - Raimundo Miranda - Fit,180.0,2025-11-20,assinatura,receita,98,2025-11-20 22:19:47
+103,Assinatura Plano 2 - Sônia Xavier - i30,180.0,2025-11-20,assinatura,receita,99,2025-11-20 22:19:47
+104,Assinatura Plano 2 - Manuel Bueno - Grand Cherokee,180.0,2025-11-20,assinatura,receita,100,2025-11-20 22:19:47
+105,Assinatura Plano 3 - Marcos Oliveira - 320i,260.0,2025-11-20,assinatura,receita,101,2025-11-20 22:19:47
+106,Assinatura Plano 4 - Sandra Costa - C200,280.0,2025-11-20,assinatura,receita,102,2025-11-20 22:19:47
+107,Assinatura Plano 3 - Marcos Oliveira - 320i,260.0,2025-11-20,assinatura,receita,103,2025-11-20 22:19:47
+108,Assinatura Plano 4 - Sandra Costa - C200,280.0,2025-11-20,assinatura,receita,104,2025-11-20 22:19:47
+109,Taxa,120.0,2025-11-20,Impostos,despesa,9,2025-11-20 22:28:01
+110,IPTU,136.0,2025-11-20,Impostos,despesa,8,2025-11-20 22:28:06
+111,Internet,80.0,2025-11-20,Internet,despesa,7,2025-11-20 22:28:12
+112,Luz,154.7,2025-11-20,Energia,despesa,6,2025-11-20 22:28:17
+113,Agua,167.8,2025-11-20,Água,despesa,5,2025-11-20 22:28:22
+114,CONTADOR,470.0,2025-11-20,Outros,despesa,3,2025-11-20 22:28:28
+115,Imposto,988.2,2025-11-20,Impostos,despesa,2,2025-11-20 22:28:33

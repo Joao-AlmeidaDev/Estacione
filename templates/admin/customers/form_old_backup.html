@@ -1,0 +1,710 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Editar' if form.id.data else 'Adicionar' }} Cliente - Estacione+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-{{ 'pencil-square' if form.id.data else 'person-plus' }} me-2"></i>
+                            {{ 'Editar' if form.id.data else 'Adicionar' }} Cliente
+                        </h5>
+                        <a href="{{ url_for('list_customers') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Abas de Navegação -->
+                        <ul class="nav nav-tabs mb-4" id="customerTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active fw-semibold px-4 py-3" id="customer-tab" data-bs-toggle="tab" 
+                                        data-bs-target="#customer-content" type="button" role="tab">
+                                    <i class="bi bi-person fs-5"></i> 
+                                    <span class="ms-2">Dados do Cliente</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-semibold px-4 py-3" id="vehicles-tab" data-bs-toggle="tab" 
+                                        data-bs-target="#vehicles-content" type="button" role="tab">
+                                    <i class="bi bi-car-front fs-5"></i> 
+                                    <span class="ms-2">Veículos</span>
+                                    <span class="badge bg-primary ms-2 fs-6" id="vehicle-count">{{ vehicles|length if vehicles else 0 }}</span>
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <!-- Conteúdo das Abas -->
+                        <div class="tab-content" id="customerTabsContent">
+                            <!-- Aba: Dados do Cliente -->
+                            <div class="tab-pane fade show active" id="customer-content" role="tabpanel">
+                        
+                        <div class="row g-4">
+                            <!-- Dados Pessoais -->
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3 text-dark fw-bold">
+                                    <i class="bi bi-person-vcard text-primary"></i> Dados Pessoais
+                                </h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form.name.label(class="form-label fw-semibold text-dark") }}
+                                    {{ form.name(class="form-control form-control-lg" + (" is-invalid" if form.name.errors else ""), placeholder="Digite o nome completo") }}
+                                    {% for error in form.name.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form.cpf.label(class="form-label fw-semibold text-dark") }}
+                                    <div class="input-group input-group-lg">
+                                        {{ form.cpf(class="form-control cpf" + (" is-invalid" if form.cpf.errors else ""), 
+                                            placeholder="000.000.000-00", oninput="formatCPF(this)") }}
+                                        <button class="btn btn-outline-primary" type="button" id="searchCpfBtn">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                        {% for error in form.cpf.errors %}
+                                            <div class="invalid-feedback">{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form.rg.label(class="form-label fw-semibold text-dark") }}
+                                    {{ form.rg(class="form-control form-control-lg" + (" is-invalid" if form.rg.errors else ""), placeholder="00.000.000-0") }}
+                                    {% for error in form.rg.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form.birth_date.label(class="form-label fw-semibold text-dark") }}
+                                    {{ form.birth_date(class="form-control form-control-lg date" + (" is-invalid" if form.birth_date.errors else ""), 
+                                        type="date") }}
+                                    {% for error in form.birth_date.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Contato -->
+                            <div class="col-12 mt-4">
+                                <h5 class="border-bottom pb-2 mb-3 text-dark fw-bold">
+                                    <i class="bi bi-telephone text-primary"></i> Contato
+                                </h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form.email.label(class="form-label fw-semibold text-dark") }}
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), 
+                                            placeholder="exemplo@email.com") }}
+                                    </div>
+                                    {% for error in form.email.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form.phone.label(class="form-label fw-semibold text-dark") }}
+                                    {{ form.phone(class="form-control form-control-lg phone" + (" is-invalid" if form.phone.errors else ""), 
+                                        placeholder="(00) 00000-0000", oninput="formatPhone(this)") }}
+                                    {% for error in form.phone.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form.phone2.label(class="form-label fw-semibold text-dark") }} <small class="text-muted">(Opcional)</small>
+                                    {{ form.phone2(class="form-control form-control-lg phone" + (" is-invalid" if form.phone2.errors else ""), 
+                                        placeholder="(00) 00000-0000", oninput="formatPhone(this)") }}
+                                    {% for error in form.phone2.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Endereço -->
+                            <div class="col-12 mt-4">
+                                <h5 class="border-bottom pb-2 mb-3 text-dark fw-bold">
+                                    <i class="bi bi-geo-alt text-primary"></i> Endereço
+                                </h5>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    {{ form.cep.label(class="form-label fw-semibold text-dark") }}
+                                    <div class="input-group input-group-lg">
+                                        {{ form.cep(class="form-control cep" + (" is-invalid" if form.cep.errors else ""), 
+                                            placeholder="00000-000", onblur="searchCep(this.value)", maxlength="9") }}
+                                        <button class="btn btn-outline-primary" type="button" id="searchCepBtn">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                    {% for error in form.cep.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-9">
+                                <div class="form-group mb-3">
+                                    {{ form.street.label(class="form-label fw-semibold text-dark") }}
+                                    {{ form.street(class="form-control form-control-lg" + (" is-invalid" if form.street.errors else ""), 
+                                        placeholder="Rua, Avenida, etc.") }}
+                                    {% for error in form.street.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <div class="form-group mb-3">
+                                    {{ form.number.label(class="form-label fw-semibold text-dark") }}
+                                    {{ form.number(class="form-control form-control-lg" + (" is-invalid" if form.number.errors else ""), 
+                                        placeholder="Nº") }}
+                                    {% for error in form.number.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <div class="form-group mb-3">
+                                    {{ form.complement.label(class="form-label fw-semibold text-dark") }} <small class="text-muted">(Opcional)</small>
+                                    {{ form.complement(class="form-control form-control-lg" + (" is-invalid" if form.complement.errors else ""), 
+                                        placeholder="Apto, Bloco, etc.") }}
+                                    {% for error in form.complement.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <div class="form-group mb-3">
+                                    {{ form.neighborhood.label(class="form-label fw-semibold text-dark") }}
+                                    {{ form.neighborhood(class="form-control form-control-lg" + (" is-invalid" if form.neighborhood.errors else ""), 
+                                        placeholder="Bairro") }}
+                                    {% for error in form.neighborhood.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    {{ form.city.label(class="form-label fw-semibold text-dark") }}
+                                    {{ form.city(class="form-control form-control-lg" + (" is-invalid" if form.city.errors else ""), 
+                                        placeholder="Cidade") }}
+                                    {% for error in form.city.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <div class="form-group mb-3">
+                                    {{ form.state.label(class="form-label fw-semibold text-dark") }}
+                                    {{ form.state(class="form-select form-select-lg" + (" is-invalid" if form.state.errors else "")) }}
+                                    {% for error in form.state.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Observações -->
+                            <div class="col-12 mt-4">
+                                <h5 class="border-bottom pb-2 mb-3 text-dark fw-bold">
+                                    <i class="bi bi-chat-left-text text-primary"></i> Observações
+                                </h5>
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="form-group mb-3">
+                                    {{ form.notes.label(class="form-label fw-semibold text-dark") }} <small class="text-muted">(Opcional)</small>
+                                    {{ form.notes(class="form-control form-control-lg" + (" is-invalid" if form.notes.errors else ""), 
+                                        rows="4", placeholder="Alguma observação importante sobre o cliente...") }}
+                                    {% for error in form.notes.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Status -->
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    {{ form.status.label(class="form-label fw-semibold text-dark") }}
+                                    {{ form.status(class="form-select form-select-lg" + (" is-invalid" if form.status.errors else "")) }}
+                                    {% for error in form.status.errors %}
+                                        <div class="invalid-feedback">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                            </div>
+                            <!-- Fim Aba: Dados do Cliente -->
+                            
+                            <!-- Aba: Veículos -->
+                            <div class="tab-pane fade" id="vehicles-content" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded">
+                                    <h5 class="mb-0 text-dark fw-bold">
+                                        <i class="bi bi-car-front-fill text-primary fs-4"></i> 
+                                        <span class="ms-2">Veículos do Cliente</span>
+                                    </h5>
+                                    <button type="button" class="btn btn-primary btn-lg px-4 py-2" onclick="addVehicleRow()">
+                                        <i class="bi bi-plus-circle"></i> <span class="ms-2">Adicionar Veículo</span>
+                                    </button>
+                                </div>
+                            
+                            <!-- Veículos -->
+                                {% if vehicles %}
+                                    {% for vehicle in vehicles %}
+                                    <div class="card mb-4 vehicle-card shadow border-0 border-start border-primary border-5">
+                                        <div class="card-header bg-gradient py-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                                            <h6 class="mb-0 fw-bold text-dark">
+                                                <i class="bi bi-car-front-fill text-primary fs-5"></i> 
+                                                <span class="ms-2 fs-5">Veículo #{{ loop.index }}</span>
+                                            </h6>
+                                            <button type="button" class="btn btn-danger btn-sm px-3" onclick="removeVehicleRow(this)">
+                                                <i class="bi bi-trash"></i> <span class="ms-1">Remover</span>
+                                            </button>
+                                        </div>
+                                        <div class="card-body p-4 bg-light">
+                                            <div class="row g-4">
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Placa *</label>
+                                                    <input type="text" class="form-control plate-mask text-uppercase" 
+                                                           name="vehicle_plate[]" value="{{ vehicle.plate }}"
+                                                           placeholder="ABC-1D23" maxlength="8" required>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Marca</label>
+                                                    <input type="text" class="form-control" 
+                                                           name="vehicle_brand[]" value="{{ vehicle.brand|default('') }}"
+                                                           placeholder="Ex: Fiat, Ford">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Modelo *</label>
+                                                    <input type="text" class="form-control" 
+                                                           name="vehicle_model[]" value="{{ vehicle.model }}"
+                                                           placeholder="Ex: Uno, Gol" required>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label class="form-label">Ano</label>
+                                                    <input type="number" class="form-control" 
+                                                           name="vehicle_year[]" value="{{ vehicle.year|default('') }}"
+                                                           placeholder="2020" min="1900" max="2100">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Cor *</label>
+                                                    <input type="text" class="form-control" 
+                                                           name="vehicle_color[]" value="{{ vehicle.color }}"
+                                                           placeholder="Ex: Branco" required>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Tipo</label>
+                                                    <select class="form-select" name="vehicle_type[]">
+                                                        <option value="carro" {{ 'selected' if vehicle.type == 'carro' else '' }}>Carro</option>
+                                                        <option value="moto" {{ 'selected' if vehicle.type == 'moto' else '' }}>Moto</option>
+                                                        <option value="utilitario" {{ 'selected' if vehicle.type == 'utilitario' else '' }}>Utilitário</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">RENAVAM</label>
+                                                    <input type="text" class="form-control" 
+                                                           name="vehicle_renavam[]" value="{{ vehicle.renavam|default('') }}"
+                                                           placeholder="00000000000" maxlength="11">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Chassi</label>
+                                                    <input type="text" class="form-control text-uppercase" 
+                                                           name="vehicle_chassis[]" value="{{ vehicle.chassis|default('') }}"
+                                                           placeholder="9BWZZZ377VT004251" maxlength="17">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Status</label>
+                                                    <select class="form-select" name="vehicle_status[]">
+                                                        <option value="ativo" {{ 'selected' if vehicle.status == 'ativo' else '' }}>Ativo</option>
+                                                        <option value="inativo" {{ 'selected' if vehicle.status == 'inativo' else '' }}>Inativo</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label">Observações sobre o veículo</label>
+                                                    <textarea class="form-control" name="vehicle_notes[]" rows="2" 
+                                                              placeholder="Ex: Amassado no para-choque traseiro, arranhão na porta...">{{ vehicle.notes|default('') }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm p-4">
+                                    <i class="bi bi-info-circle fs-4"></i> 
+                                    <strong class="ms-2 fs-5">Nenhum veículo cadastrado.</strong> 
+                                    <p class="mb-0 mt-2">Clique em "Adicionar Veículo" acima para começar o cadastro.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            </div>
+                            <!-- Fim Aba: Veículos -->
+                        </div>
+                        
+                        <!-- Botões de Ação -->
+                        <div class="row g-3">
+                            <div class="col-12 mt-4">
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('list_customers') }}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-lg"></i> Cancelar
+                                    </a>
+                                    <div>
+                                        {% if form.id.data %}
+                                            <a href="#" class="btn btn-outline-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                                <i class="bi bi-trash"></i> Excluir
+                                            </a>
+                                        {% endif %}
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-save"></i> {{ 'Salvar' if form.id.data else 'Cadastrar' }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+{% if form.id.data %}
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir este cliente?</p>
+                <p class="text-danger">
+                    <i class="bi bi-exclamation-triangle-fill"></i> 
+                    Esta ação não pode ser desfeita e todos os dados do cliente serão removidos.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form action="{{ url_for('delete_customer', customer_id=form.id.data) }}" method="POST" class="d-inline">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Excluir
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Contador de veículos
+let vehicleCount = {{ vehicles|length if vehicles else 0 }};
+
+// Adiciona nova linha de veículo
+function addVehicleRow() {
+    vehicleCount++;
+    const container = document.getElementById('vehicles-container');
+    
+    // Remove mensagem se existir
+    const alert = container.querySelector('.alert');
+    if (alert) alert.remove();
+    
+    const vehicleCard = document.createElement('div');
+    vehicleCard.className = 'card mb-4 vehicle-card shadow border-0 border-start border-primary border-5';
+    vehicleCard.innerHTML = `
+        <div class="card-header bg-gradient py-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+            <h6 class="mb-0 fw-bold text-dark">
+                <i class="bi bi-car-front-fill text-primary fs-5"></i> 
+                <span class="ms-2 fs-5">Veículo #${vehicleCount + 1}</span>
+            </h6>
+            <button type="button" class="btn btn-danger btn-sm px-3" onclick="removeVehicleRow(this)">
+                <i class="bi bi-trash"></i> <span class="ms-1">Remover</span>
+            </button>
+        </div>
+        <div class="card-body p-4 bg-light">
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-dark">Placa *</label>
+                    <input type="text" class="form-control form-control-lg plate-mask text-uppercase" 
+                           name="vehicle_plate[]" placeholder="ABC-1D23" maxlength="8" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-dark">Marca</label>
+                    <input type="text" class="form-control form-control-lg" 
+                           name="vehicle_brand[]" placeholder="Ex: Fiat, Ford">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold text-dark">Modelo *</label>
+                    <input type="text" class="form-control form-control-lg" 
+                           name="vehicle_model[]" placeholder="Ex: Uno, Gol" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold text-dark">Ano</label>
+                    <input type="number" class="form-control form-control-lg" 
+                           name="vehicle_year[]" placeholder="2020" min="1900" max="2100">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-dark">Cor *</label>
+                    <input type="text" class="form-control form-control-lg" 
+                           name="vehicle_color[]" placeholder="Ex: Branco" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-dark">Tipo</label>
+                    <select class="form-select form-select-lg" name="vehicle_type[]">
+                        <option value="carro">Carro</option>
+                        <option value="moto">Moto</option>
+                        <option value="utilitario">Utilitário</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold text-dark">RENAVAM</label>
+                    <input type="text" class="form-control form-control-lg" 
+                           name="vehicle_renavam[]" placeholder="00000000000" maxlength="11">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold text-dark">Chassi</label>
+                    <input type="text" class="form-control form-control-lg text-uppercase" 
+                           name="vehicle_chassis[]" placeholder="9BWZZZ377VT004251" maxlength="17">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold text-dark">Status</label>
+                    <select class="form-select form-select-lg" name="vehicle_status[]">
+                        <option value="ativo">Ativo</option>
+                        <option value="inativo">Inativo</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold text-dark">Observações sobre o veículo</label>
+                    <textarea class="form-control form-control-lg" name="vehicle_notes[]" rows="3" 
+                              placeholder="Ex: Amassado no para-choque traseiro, arranhão na porta..."></textarea>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(vehicleCard);
+    
+    // Aplica máscara na placa do novo campo
+    const plateInput = vehicleCard.querySelector('.plate-mask');
+    plateInput.addEventListener('input', function() {
+        formatPlate(this);
+    });
+    
+    // Atualiza contador no badge
+    updateVehicleCount();
+}
+
+// Remove linha de veículo
+function removeVehicleRow(button) {
+    if (confirm('Deseja remover este veículo?')) {
+        button.closest('.vehicle-card').remove();
+        vehicleCount--;
+        
+        // Se não houver mais veículos, mostra mensagem
+        const container = document.getElementById('vehicles-container');
+        if (container.querySelectorAll('.vehicle-card').length === 0) {
+            container.innerHTML = `
+                <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm p-4">
+                    <i class="bi bi-info-circle fs-4"></i> 
+                    <strong class="ms-2 fs-5">Nenhum veículo cadastrado.</strong> 
+                    <p class="mb-0 mt-2">Clique em "Adicionar Veículo" acima para começar o cadastro.</p>
+                </div>
+            `;
+        }
+        
+        updateVehicleCount();
+    }
+}
+
+// Atualiza contador de veículos no badge
+function updateVehicleCount() {
+    const count = document.querySelectorAll('.vehicle-card').length;
+    document.getElementById('vehicle-count').textContent = count;
+}
+
+// Formata Placa
+function formatPlate(input) {
+    let value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    
+    if (value.length > 7) {
+        value = value.substring(0, 7);
+    }
+    
+    if (value.length > 4) {
+        value = value.replace(/^([A-Z]{3})([0-9])([A-Z0-9]{0,2})/, '$1-$2$3');
+    } else if (value.length > 3) {
+        value = value.replace(/^([A-Z]{3})([0-9]{0,1})/, '$1-$2');
+    }
+    
+    input.value = value;
+}
+
+// Formata CPF
+function formatCPF(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length > 11) value = value.substring(0, 11);
+    
+    if (value.length > 9) {
+        value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2}).*/, '$1.$2.$3-$4');
+    } else if (value.length > 6) {
+        value = value.replace(/^(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3');
+    } else if (value.length > 3) {
+        value = value.replace(/^(\d{3})(\d{1,3})/, '$1.$2');
+    } else if (value.length > 0) {
+        value = value.replace(/^(\d*)/, '$1');
+    }
+    
+    input.value = value;
+}
+
+// Formata Telefone
+function formatPhone(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length > 11) value = value.substring(0, 11);
+    
+    if (value.length > 10) {
+        value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+    } else if (value.length > 5) {
+        value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+    } else if (value.length > 2) {
+        value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+    } else if (value.length > 0) {
+        value = value.replace(/^(\d*)/, '($1');
+    }
+    
+    input.value = value;
+}
+
+// Busca CEP via API
+function searchCep(cep) {
+    cep = cep.replace(/\D/g, '');
+    
+    if (cep.length !== 8) return;
+    
+    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.erro) {
+                document.getElementById('street').value = data.logradouro || '';
+                document.getElementById('neighborhood').value = data.bairro || '';
+                document.getElementById('city').value = data.localidade || '';
+                document.getElementById('state').value = data.uf || '';
+                document.getElementById('number').focus();
+            } else {
+                alert('CEP não encontrado.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao buscar CEP:', error);
+            alert('Erro ao buscar CEP. Tente novamente mais tarde.');
+        });
+}
+
+// Validação do formulário
+(function () {
+    'use strict'
+    
+    // Busca todos os formulários que precisam de validação
+    var forms = document.querySelectorAll('.needs-validation')
+    
+    // Loop sobre os formulários e previne o envio
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Botão de busca de CEP
+    const searchCepBtn = document.getElementById('searchCepBtn');
+    if (searchCepBtn) {
+        searchCepBtn.addEventListener('click', function() {
+            const cep = document.getElementById('cep').value;
+            if (cep) searchCep(cep);
+        });
+    }
+    
+    // Máscara para campos de telefone
+    const phoneInputs = document.querySelectorAll('.phone');
+    phoneInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            formatPhone(this);
+        });
+    });
+    
+    // Máscara para campo de CPF
+    const cpfInputs = document.querySelectorAll('.cpf');
+    cpfInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            formatCPF(this);
+        });
+    });
+    
+    // Máscara para campo de CEP
+    const cepInputs = document.querySelectorAll('.cep');
+    cepInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 8) value = value.substring(0, 8);
+            
+            if (value.length > 5) {
+                value = value.replace(/^(\d{5})(\d{0,3})/, '$1-$2');
+            }
+            
+            this.value = value;
+        });
+    });
+    
+    // Máscara para placas existentes
+    const plateInputs = document.querySelectorAll('.plate-mask');
+    plateInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            formatPlate(this);
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,687 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Veículos - Estacione+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Gerenciar Veículos</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newVehicleModal">
+                <i class="bi bi-plus-lg"></i> Adicionar Veículo
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Placa ou Modelo</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           value="{{ request.args.get('search', '') }}" placeholder="Placa ou modelo do veículo">
+                </div>
+                <div class="col-md-3">
+                    <label for="customer" class="form-label">Proprietário</label>
+                    <select class="form-select" id="customer" name="customer">
+                        <option value="">Todos</option>
+                        {% for customer in customers %}
+                        <option value="{{ customer.id }}" {{ 'selected' if request.args.get('customer') == customer.id|string }}>
+                            {{ customer.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">Todos</option>
+                        <option value="ativo" {{ 'selected' if request.args.get('status') == 'ativo' }}>Ativos</option>
+                        <option value="inativo" {{ 'selected' if request.args.get('status') == 'inativo' }}>Inativos</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Filtrar</button>
+                    <a href="{{ url_for('list_vehicles') }}" class="btn btn-outline-secondary">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela de Veículos -->
+    <div class="card">
+        <div class="card-body">
+            {% if vehicles %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Placa</th>
+                            <th>Modelo</th>
+                            <th>Cor</th>
+                            <th>Proprietário</th>
+                            <th>Status</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vehicle in vehicles %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="me-2 p-2 rounded" style="background-color: {{ vehicle.color|default('#6c757d') }}; width: 20px; height: 20px;"></div>
+                                    <span class="fw-bold">{{ vehicle.plate|upper }}</span>
+                                </div>
+                            </td>
+                            <td>{{ vehicle.model }}</td>
+                            <td>{{ vehicle.color|title }}</td>
+                            <td>
+                                {{ vehicle.customer_name|default('-') }}
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if vehicle.status == 'ativo' else 'secondary' }}">
+                                    {{ vehicle.status|title }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary view-vehicle-btn" 
+                                            data-bs-toggle="modal" data-bs-target="#viewVehicleModal"
+                                            data-id="{{ vehicle.id }}"
+                                            data-plate="{{ vehicle.plate }}"
+                                            data-customer-name="{{ vehicle.customer_name }}"
+                                            data-customer-id="{{ vehicle.customer_id }}"
+                                            data-brand="{{ vehicle.brand }}"
+                                            data-model="{{ vehicle.model }}"
+                                            data-color="{{ vehicle.color }}"
+                                            data-year="{{ vehicle.year }}"
+                                            data-type="{{ vehicle.type }}"
+                                            data-renavam="{{ vehicle.renavam }}"
+                                            data-chassis="{{ vehicle.chassis }}"
+                                            data-notes="{{ vehicle.notes }}"
+                                            data-status="{{ vehicle.status }}"
+                                            title="Visualizar">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary edit-vehicle-btn" 
+                                            data-bs-toggle="modal" data-bs-target="#editVehicleModal"
+                                            data-id="{{ vehicle.id }}"
+                                            data-plate="{{ vehicle.plate }}"
+                                            data-customer-id="{{ vehicle.customer_id }}"
+                                            data-brand="{{ vehicle.brand }}"
+                                            data-model="{{ vehicle.model }}"
+                                            data-color="{{ vehicle.color }}"
+                                            data-year="{{ vehicle.year }}"
+                                            data-type="{{ vehicle.type }}"
+                                            data-renavam="{{ vehicle.renavam }}"
+                                            data-chassis="{{ vehicle.chassis }}"
+                                            data-notes="{{ vehicle.notes }}"
+                                            data-status="{{ vehicle.status }}"
+                                            title="Editar">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-vehicle-btn" 
+                                            data-id="{{ vehicle.id }}"
+                                            data-plate="{{ vehicle.plate }}"
+                                            title="Excluir">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% else %}
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="bi bi-car-front display-1 text-muted"></i>
+                </div>
+                <h4>Nenhum veículo encontrado</h4>
+                <p class="text-muted">
+                    {% if request.args.get('search') or request.args.get('customer') or request.args.get('status') %}
+                        Nenhum veículo corresponde aos filtros aplicados.
+                        <a href="{{ url_for('list_vehicles') }}" class="text-primary">Limpar filtros</a>
+                    {% else %}
+                        Você ainda não possui veículos cadastrados.
+                        <a href="{{ url_for('add_vehicle') }}" class="text-primary">Adicionar veículo</a>
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal Visualizar Veículo -->
+<div class="modal fade" id="viewVehicleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-eye text-primary me-2"></i>Detalhes do Veículo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Dados do Veículo -->
+                <h6 class="mb-3 text-primary"><i class="bi bi-info-circle me-2"></i>Dados do Veículo</h6>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted">Placa</label>
+                        <p class="form-control-plaintext" id="view_plate">-</p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted">Proprietário</label>
+                        <p class="form-control-plaintext" id="view_customer_name">-</p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted">Marca</label>
+                        <p class="form-control-plaintext" id="view_brand">-</p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted">Modelo</label>
+                        <p class="form-control-plaintext" id="view_model">-</p>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-muted">Cor</label>
+                        <p class="form-control-plaintext" id="view_color">-</p>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-muted">Ano</label>
+                        <p class="form-control-plaintext" id="view_year">-</p>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-muted">Tipo</label>
+                        <p class="form-control-plaintext" id="view_type">-</p>
+                    </div>
+                </div>
+                
+                <!-- Documentos -->
+                <h6 class="mb-3 text-primary"><i class="bi bi-file-text me-2"></i>Documentos</h6>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted">RENAVAM</label>
+                        <p class="form-control-plaintext" id="view_renavam">-</p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted">Chassi</label>
+                        <p class="form-control-plaintext" id="view_chassis">-</p>
+                    </div>
+                </div>
+                
+                <!-- Observações -->
+                <h6 class="mb-3 text-primary"><i class="bi bi-chat-left-text me-2"></i>Observações</h6>
+                
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold text-muted">Observações</label>
+                        <p class="form-control-plaintext" id="view_notes" style="white-space: pre-wrap;">-</p>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-muted">Status</label>
+                        <p class="form-control-plaintext">
+                            <span id="view_status_badge" class="badge bg-success">Ativo</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Fechar
+                </button>
+                <button type="button" class="btn btn-primary" id="btn_view_to_edit">
+                    <i class="bi bi-pencil"></i> Editar Veículo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteVehicleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Tem certeza que deseja excluir o veículo <strong id="delete_vehicle_plate"></strong>?</p>
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <strong>Atenção:</strong> Esta ação não poderá ser desfeita e todos os dados do veículo serão removidos.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </button>
+                <form id="deleteVehicleForm" method="POST" class="d-inline">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Confirmar Exclusão
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Novo Veículo -->
+<div class="modal fade" id="newVehicleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-car-front text-primary me-2"></i>Novo Veículo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('add_vehicle') }}" method="POST">
+                <div class="modal-body">
+                    <!-- Dados do Veículo -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-info-circle me-2"></i>Dados do Veículo</h6>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Placa <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control text-uppercase" name="plate" 
+                                   placeholder="AAA-0000" maxlength="8" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Proprietário <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" name="customer_id" required>
+                                <option value="">Selecione um proprietário</option>
+                                {% for customer in customers %}
+                                <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Marca <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="brand" 
+                                   placeholder="Ex: Fiat, Volkswagen, Toyota" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Modelo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="model" 
+                                   placeholder="Ex: Gol, Palio, Corolla" required>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Cor</label>
+                            <input type="text" class="form-control" name="color_name" 
+                                   placeholder="Ex: Prata, Preto, Branco">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Ano</label>
+                            <input type="number" class="form-control" name="year" 
+                                   placeholder="2024" min="1900" max="2100">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" name="type">
+                                <option value="">Selecione</option>
+                                <option value="carro">Carro</option>
+                                <option value="moto">Moto</option>
+                                <option value="caminhao">Caminhão</option>
+                                <option value="van">Van</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Documentos -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-file-text me-2"></i>Documentos</h6>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">RENAVAM</label>
+                            <input type="text" class="form-control" name="renavam" 
+                                   placeholder="Número do RENAVAM">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Chassi</label>
+                            <input type="text" class="form-control text-uppercase" name="chassis" 
+                                   placeholder="Número do Chassi">
+                        </div>
+                    </div>
+                    
+                    <!-- Observações -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-chat-left-text me-2"></i>Observações</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Observações</label>
+                            <textarea class="form-control" name="notes" rows="3" 
+                                      placeholder="Informações adicionais sobre o veículo..."></textarea>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Status <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" name="status" required>
+                                <option value="ativo" selected>Ativo</option>
+                                <option value="inativo">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>Campos marcados com <span class="text-danger">*</span> são obrigatórios</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Cadastrar Veículo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Veículo -->
+<div class="modal fade" id="editVehicleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil text-primary me-2"></i>Editar Veículo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editVehicleForm" method="POST">
+                <input type="hidden" name="vehicle_id" id="edit_vehicle_id">
+                <div class="modal-body">
+                    <!-- Dados do Veículo -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-info-circle me-2"></i>Dados do Veículo</h6>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Placa <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control text-uppercase" name="plate" 
+                                   id="edit_plate" placeholder="AAA-0000" maxlength="8" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Proprietário <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" name="customer_id" id="edit_customer_id" required>
+                                <option value="">Selecione um proprietário</option>
+                                {% for customer in customers %}
+                                <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Marca <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="brand" id="edit_brand"
+                                   placeholder="Ex: Fiat, Volkswagen, Toyota" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Modelo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="model" id="edit_model"
+                                   placeholder="Ex: Gol, Palio, Corolla" required>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Cor</label>
+                            <input type="text" class="form-control" name="color_name" id="edit_color"
+                                   placeholder="Ex: Prata, Preto, Branco">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Ano</label>
+                            <input type="number" class="form-control" name="year" id="edit_year"
+                                   placeholder="2024" min="1900" max="2100">
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" name="type" id="edit_type">
+                                <option value="">Selecione</option>
+                                <option value="carro">Carro</option>
+                                <option value="moto">Moto</option>
+                                <option value="caminhao">Caminhão</option>
+                                <option value="van">Van</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Documentos -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-file-text me-2"></i>Documentos</h6>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">RENAVAM</label>
+                            <input type="text" class="form-control" name="renavam" id="edit_renavam"
+                                   placeholder="Número do RENAVAM">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Chassi</label>
+                            <input type="text" class="form-control text-uppercase" name="chassis" id="edit_chassis"
+                                   placeholder="Número do Chassi">
+                        </div>
+                    </div>
+                    
+                    <!-- Observações -->
+                    <h6 class="mb-3 text-primary"><i class="bi bi-chat-left-text me-2"></i>Observações</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Observações</label>
+                            <textarea class="form-control" name="notes" id="edit_notes" rows="3"
+                                      placeholder="Informações adicionais sobre o veículo..."></textarea>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                Status <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" name="status" id="edit_status" required>
+                                <option value="ativo">Ativo</option>
+                                <option value="inativo">Inativo</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>Campos marcados com <span class="text-danger">*</span> são obrigatórios</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Atualizar Veículo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Formata a placa enquanto digita
+$(document).on('input', 'input[name="plate"]', function() {
+    let value = $(this).val().replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    
+    if (value.length > 7) {
+        value = value.substring(0, 7);
+    }
+    
+    if (value.length > 3) {
+        value = value.substring(0, 3) + '-' + value.substring(3);
+    }
+    
+    $(this).val(value);
+});
+
+// Variável global para armazenar dados do veículo atual
+let currentVehicleData = {};
+
+// Modal de Visualização
+$(document).on('click', '.view-vehicle-btn', function() {
+    currentVehicleData = {
+        id: $(this).data('id'),
+        plate: $(this).data('plate'),
+        customerName: $(this).data('customer-name'),
+        customerId: $(this).data('customer-id'),
+        brand: $(this).data('brand'),
+        model: $(this).data('model'),
+        color: $(this).data('color'),
+        year: $(this).data('year'),
+        type: $(this).data('type'),
+        renavam: $(this).data('renavam'),
+        chassis: $(this).data('chassis'),
+        notes: $(this).data('notes'),
+        status: $(this).data('status')
+    };
+    
+    $('#view_plate').text(currentVehicleData.plate || '-');
+    $('#view_customer_name').text(currentVehicleData.customerName || '-');
+    $('#view_brand').text(currentVehicleData.brand || '-');
+    $('#view_model').text(currentVehicleData.model || '-');
+    $('#view_color').text(currentVehicleData.color || '-');
+    $('#view_year').text(currentVehicleData.year || '-');
+    
+    // Formata o tipo
+    const typeMap = {
+        'carro': 'Carro',
+        'moto': 'Moto',
+        'caminhao': 'Caminhão',
+        'van': 'Van'
+    };
+    $('#view_type').text(typeMap[currentVehicleData.type] || currentVehicleData.type || '-');
+    
+    $('#view_renavam').text(currentVehicleData.renavam || '-');
+    $('#view_chassis').text(currentVehicleData.chassis || '-');
+    $('#view_notes').text(currentVehicleData.notes || '-');
+    
+    // Atualiza badge de status
+    if (currentVehicleData.status === 'ativo') {
+        $('#view_status_badge').removeClass('bg-secondary').addClass('bg-success').text('Ativo');
+    } else {
+        $('#view_status_badge').removeClass('bg-success').addClass('bg-secondary').text('Inativo');
+    }
+});
+
+// Botão para ir de visualizar para editar
+$(document).on('click', '#btn_view_to_edit', function() {
+    $('#viewVehicleModal').modal('hide');
+    
+    // Pequeno delay para suavizar a transição
+    setTimeout(function() {
+        // Preenche o modal de edição com os dados armazenados
+        $('#edit_vehicle_id').val(currentVehicleData.id);
+        $('#edit_plate').val(currentVehicleData.plate);
+        $('#edit_customer_id').val(currentVehicleData.customerId);
+        $('#edit_brand').val(currentVehicleData.brand);
+        $('#edit_model').val(currentVehicleData.model);
+        $('#edit_color').val(currentVehicleData.color);
+        $('#edit_year').val(currentVehicleData.year);
+        $('#edit_type').val(currentVehicleData.type);
+        $('#edit_renavam').val(currentVehicleData.renavam);
+        $('#edit_chassis').val(currentVehicleData.chassis);
+        $('#edit_notes').val(currentVehicleData.notes);
+        $('#edit_status').val(currentVehicleData.status);
+        
+        $('#editVehicleForm').attr('action', `/admin/vehicles/edit/${currentVehicleData.id}`);
+        $('#editVehicleModal').modal('show');
+    }, 300);
+});
+
+// Modal de Edição
+$(document).on('click', '.edit-vehicle-btn', function() {
+    const vehicleId = $(this).data('id');
+    const plate = $(this).data('plate');
+    const customerId = $(this).data('customer-id');
+    const brand = $(this).data('brand');
+    const model = $(this).data('model');
+    const color = $(this).data('color');
+    const year = $(this).data('year');
+    const type = $(this).data('type');
+    const renavam = $(this).data('renavam');
+    const chassis = $(this).data('chassis');
+    const notes = $(this).data('notes');
+    const status = $(this).data('status');
+    
+    $('#edit_vehicle_id').val(vehicleId);
+    $('#edit_plate').val(plate);
+    $('#edit_customer_id').val(customerId);
+    $('#edit_brand').val(brand);
+    $('#edit_model').val(model);
+    $('#edit_color').val(color);
+    $('#edit_year').val(year);
+    $('#edit_type').val(type);
+    $('#edit_renavam').val(renavam);
+    $('#edit_chassis').val(chassis);
+    $('#edit_notes').val(notes);
+    $('#edit_status').val(status);
+    
+    $('#editVehicleForm').attr('action', `/admin/vehicles/edit/${vehicleId}`);
+});
+
+// Modal de Exclusão
+$(document).on('click', '.delete-vehicle-btn', function() {
+    const vehicleId = $(this).data('id');
+    const plate = $(this).data('plate');
+    
+    $('#delete_vehicle_plate').text(plate);
+    $('#deleteVehicleForm').attr('action', `/admin/vehicles/delete/${vehicleId}`);
+    
+    // Abre o modal de exclusão
+    $('#deleteVehicleModal').modal('show');
+});
+</script>
+{% endblock %}
